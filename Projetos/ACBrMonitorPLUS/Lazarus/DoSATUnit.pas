@@ -236,13 +236,19 @@ public
   procedure Executar; override;
 end;
 
+{ TMetodoEnviarEmailCFe }
+
+TMetodoEnviarEmailCFe = class(TACBrMetodo)
+public
+  procedure Executar; override;
+end;
+
 
 implementation
 
 uses
   ACBrUtil,DoACBrUnit,IniFiles, pcnAuxiliar, typinfo,
   ACBrSATExtratoClass;
-
 
 procedure TACBrObjetoSAT.CarregarDadosVenda(aStr: String; aNomePDF: String);
 begin
@@ -312,10 +318,26 @@ begin
 end;
 
 procedure TACBrObjetoSAT.GerarIniCFe(AStr: String);
+//var
+  //ok: boolean;
 begin
   with fACBrSAT do
   begin
     CFe.Clear;
+    //Campos preenchidos em tela
+    ACBrSAT.Config.infCFe_versaoDadosEnt := MonitorConfig.SAT.versaoDadosEnt;
+    CFe.infCFe.versaoDadosEnt:= ACBrSAT.Config.infCFe_versaoDadosEnt;
+
+    CFe.ide.CNPJ := MonitorConfig.SAT.SATSWH.CNPJ;
+    CFe.ide.signAC := MonitorConfig.SAT.SATSWH.Assinatura;
+    CFe.ide.numeroCaixa := MonitorConfig.SAT.NumeroCaixa;
+    CFe.Emit.CNPJ := MonitorConfig.SAT.SATImpressao.SATEmit.CNPJ;
+    CFe.Emit.IE := MonitorConfig.SAT.SATImpressao.SATEmit.IE;
+    CFe.Emit.IM := MonitorConfig.SAT.SATImpressao.SATEmit.IM;
+    CFe.Emit.cRegTrib := TpcnRegTrib(MonitorConfig.SAT.SATImpressao.SATEmit.RegTributario);
+    CFe.Emit.cRegTribISSQN := TpcnRegTribISSQN(MonitorConfig.SAT.SATImpressao.SATEmit.RegTribISSQN);
+    CFe.Emit.indRatISSQN :=  TpcnindRatISSQN(MonitorConfig.SAT.SATImpressao.SATEmit.IndRatISSQN);
+
     CFe.LoadFromIni(AStr);
 
   end;
@@ -391,6 +413,74 @@ begin
 
   end;
 
+end;
+
+{ TMetodoEnviarEmailCFe }
+
+{ Params: 0 -  cDestinatario: email do destinatário
+          1 -  cXMLVenda: String com path do XML de Venda
+          2 -  cAssunto: Assunto do Email
+          3 -  cMensagem: Mensagem do corpo do e-mail
+          4 -  cCC: String com e-mails copia (Separados ;)
+          5 -  cAnexos: String com Path de Anexos (Separados ;)
+}
+procedure TMetodoEnviarEmailCFe.Executar;
+var
+  cDestinatario: String;
+  cXMLVenda: String;
+  cAssunto: String;
+  cMensagem: String;
+  cCC: String;
+  cAnexos: String;
+  sAssuntoSAT: String;
+  slMensagem, slCC, slAnexos: TStringList;
+
+begin
+  cDestinatario:= fpCmd.Params(0);
+  cXMLVenda:= fpCmd.Params(1);
+  cAssunto:= fpCmd.Params(2);
+  cMensagem:= fpCmd.Params(3);
+  cCC:= fpCmd.Params(4);
+  cAnexos:= fpCmd.Params(5);
+
+  with TACBrObjetoSAT(fpObjetoDono) do
+  begin
+    ACBrSAT.CFe.Clear;
+
+    slMensagem := TStringList.Create;
+    slCC := TStringList.Create;
+    slAnexos := TStringList.Create;
+    try
+      CarregarDadosVenda(cXMLVenda);
+      DoPrepararImpressaoSAT(' ',False);
+
+      with MonitorConfig.SAT.SATEmail do
+      begin
+         slMensagem.Text := IfThen(NaoEstaVazio(cMensagem), cMensagem, StringToBinaryString(MensagemSAT));
+         sAssuntoSAT := IfThen(NaoEstaVazio(cAssunto),cAssunto, AssuntoSAT);
+      end;
+
+      QuebrarLinha(cCC, slCC);
+      QuebrarLinha(cAnexos, slAnexos);
+
+      try
+        ACBrSAT.EnviarEmail(cDestinatario,
+                            sAssuntoSAT,
+                            slMensagem,
+                            slCC,
+                            slAnexos);
+        fpCmd.Resposta := 'Email enviado com sucesso';
+      except
+        on E: Exception do
+          raise Exception.Create('Erro ao enviar email' + sLineBreak + E.Message);
+      end;
+
+    finally
+      slMensagem.Free;
+      slCC.Free;
+      slAnexos.Free;
+    end;
+  end;
 end;
 
 { TMetodoSetLogoMarca }
@@ -635,6 +725,7 @@ begin
         Resultado := ACBrSAT.EnviarDadosVenda( ArqCFe )
       else
         raise Exception.Create('XML em: '+cArqXML+' é inválido! ');
+
     end
     else if (ACBrSAT.CFe.ide.signAC <> '') then
       Resultado := ACBrSAT.EnviarDadosVenda
@@ -992,6 +1083,7 @@ begin
   ListaDeMetodos.Add(CMetodoSetNumeroSessao);
   ListaDeMetodos.Add(CMetodoSetlogomarcaSAT);
   ListaDeMetodos.Add(CMetodoGerarAssinaturaSAT);
+  ListaDeMetodos.Add(CMetodoEnviarEmailCFe);
 
   // DoACBr
   ListaDeMetodos.Add(CMetodoSavetofile);
@@ -1055,6 +1147,7 @@ begin
     28 : AMetodoClass := TMetodoSetNumeroSessao;
     29 : AMetodoClass := TMetodoSetLogoMarca;
     30 : AMetodoClass := TMetodoGerarAssinaturaSAT;
+    31 : AMetodoClass := TMetodoEnviarEmailCFe;
 
     else
       DoACbr(ACmd);

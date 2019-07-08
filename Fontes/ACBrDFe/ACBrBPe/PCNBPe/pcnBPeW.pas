@@ -72,7 +72,7 @@ type
     FBPe: TBPe;
     FOpcoes: TGeradorOpcoes;
 
-    Versao: String;
+    FVersao: String;
     FChaveBPe: string;
     FIdCSRT: Integer;
     FCSRT: String;
@@ -177,7 +177,7 @@ var
 begin
   Gerador.ListaDeAlertas.Clear;
 
-  Versao := Copy(BPe.infBPe.VersaoStr, 9, 4);
+  FVersao := Copy(BPe.infBPe.VersaoStr, 9, 4);
 
   FChaveBPe := GerarChaveAcesso(BPe.ide.cUF, BPe.ide.dhEmi, BPe.emit.CNPJ, BPe.ide.serie,
                             BPe.ide.nBP, StrToInt(TpEmisToStr(BPe.ide.tpEmis)),
@@ -771,12 +771,12 @@ begin
   begin
     Gerador.wGrupo('pag', '#161');
 
-    Gerador.wCampo(tcStr, '#162', 'tPag    ', 02, 002, 1, FormaPagamentoToStr(BPe.pag[i].tPag), DSC_TPAG);
+    Gerador.wCampo(tcStr, '#162', 'tPag    ', 02, 002, 1, FormaPagamentoBPeToStr(BPe.pag[i].tPag), DSC_TPAG);
     Gerador.wCampo(tcStr, '#162a', 'xPag   ', 02, 100, 0, BPe.pag[i].xPag, DSC_XPAG);
     Gerador.wCampo(tcStr, '#162b', 'nDocPag', 02, 020, 0, BPe.pag[i].nDocPag, DSC_NDOCPAG);
     Gerador.wCampo(tcDe2, '#163', 'vPag    ', 01, 015, 1, BPe.pag[i].vPag, DSC_VPAG);
 
-    if(BPe.pag[i].tPag in [fpCartaoDebito,fpCartaoCredito]) and
+    if(BPe.pag[i].tPag in [fpCartaoDebito, fpCartaoCredito]) and
       ((BPe.pag[i].CNPJ <> '') or (BPe.pag[i].tpIntegra <> tiNaoInformado))then
     begin
       Gerador.wGrupo('card', '#164');

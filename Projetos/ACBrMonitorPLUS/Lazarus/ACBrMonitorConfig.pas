@@ -160,6 +160,7 @@ type
     Confirmacao       : Boolean;
     SegundoPlano      : Boolean;
     Codificacao       : String;
+    HTML              : Boolean;
   end;
 
   TCertificado = record
@@ -231,6 +232,7 @@ type
     Versao            : String;
     VersaoMDFe        : String;
     VersaoCTe         : String;
+    VersaoBPe         : String;
     VersaoeSocial     : String;
     VersaoReinf       : String;
     VersaoQRCode      : String;
@@ -238,6 +240,7 @@ type
     FormaEmissaoNFe   : Integer;
     FormaEmissaoCTe   : Integer;
     FormaEmissaoMDFe  : Integer;
+    FormaEmissaoBPe   : Integer;
     FormaEmissaoGNRe  : Integer;
     Ambiente          : Integer;
     UF                : String;
@@ -272,6 +275,7 @@ type
     ImpDescPorc                      : Boolean;
     MostrarPreview                   : Boolean;
     Copias                           : Integer;
+    CopiasNFCe                       : Integer;
     LarguraCodigoProduto             : Integer;
     EspessuraBorda                   : Integer;
     FonteRazao                       : Integer;
@@ -319,20 +323,24 @@ type
     AtualizarXMLCancelado        : Boolean;
     NormatizarMunicipios         : Boolean;
     UsarSeparadorPathPDF         : Boolean;
+    SepararPorNome               : Boolean;
     PathNFe                      : String;
     PathInu                      : String;
     PathDPEC                     : String;
     PathEvento                   : String;
     PathArqTXT                   : String;
+    PathDownload                 : String;
   end;
 
   TDFeEmail = record
     MensagemCTe       : String;
     MensagemNFe       : String;
     MensagemMDFe      : String;
+    MensagemBPe       : String;
     AssuntoCTe        : String;
     AssuntoNFe        : String;
     AssuntoMDFe       : String;
+    AssuntoBPe        : String;
   end;
 
   TDFeRespTecnico = record
@@ -372,6 +380,7 @@ type
     ArquivoWebServicesGNRe: String;
     ArquivoWebServiceseSocial: String;
     ArquivoWebServicesReinf: String;
+    ArquivoWebServicesBPe: String;
     ValidarDigest      : Boolean;
     TimeoutWebService  : Integer;
     Certificado        : TCertificado;
@@ -390,7 +399,7 @@ type
     ImprimeEmUmaLinha           : Boolean;
     ImprimeChaveEmUmaLinha      : Integer;
     UsaCodigoEanImpressao       : Boolean;
-    ImprimeQRCodeLateral         : Boolean;
+    ImprimeQRCodeLateral        : Boolean;
     ImprimeLogoLateral          : Boolean;
   end;
 
@@ -449,6 +458,11 @@ type
     SATPrinter                 : TSATPrinter;
   end;
 
+  TSATEmail = record
+    MensagemSAT                : String;
+    AssuntoSAT                 : String;
+  end;
+
   TSAT = record
     Modelo                       : Integer;
     ArqLog                       : String;
@@ -469,6 +483,7 @@ type
     SATImpressao                 : TSATImpressao;
     SATRede                      : TSATRede;
     SATSWH                       : TSATSwH;
+    SATEmail                     : TSATEmail;
   end;
 
   TIntegradorFiscal = record
@@ -533,6 +548,7 @@ type
     DigitoConta                : String ;
     Agencia                    : String ;
     DigitoAgencia              : String ;
+    DigitoAgenciaConta         : String ;
     CodCedente                 : String ;
     LocalPagamento             : String ;
   end;
@@ -850,6 +866,7 @@ begin
       Ini.WriteBool( CSecEmail, CKeyEmailConfirmacao, Confirmacao );
       Ini.WriteBool( CSecEmail, CKeyEmailSegundoPlano, SegundoPlano );
       Ini.WriteString( CSecEmail, CKeyEmailCodificacao, Codificacao );
+      Ini.WriteBool( CSecEmail, CKeyEmailHTML, HTML );
     end;
 
     with DFe do
@@ -866,6 +883,7 @@ begin
       Ini.WriteString( CSecACBrNFeMonitor, CKeyArquivoWebServicesGNRe, ArquivoWebServicesGNRe );
       Ini.Writestring( CSecACBrNFeMonitor, CKeyArquivoWebServiceseSocial, ArquivoWebServiceseSocial );
       Ini.Writestring( CSecACBrNFeMonitor, CKeyArquivoWebServicesReinf, ArquivoWebServicesReinf );
+      Ini.Writestring( CSecACBrNFeMonitor, CKeyArquivoWebServicesBPe, ArquivoWebServicesBPe );
       Ini.WriteBool( CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest );
       Ini.WriteInteger( CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeoutWebService );
     end;
@@ -903,10 +921,12 @@ begin
       Ini.WriteString( CSecWebService, CKeyVersaoReinf, VersaoReinf );
       Ini.WriteString( CSecWebService, CKeyVersaoeSocial, VersaoeSocial );
       Ini.WriteString( CSecWebService, CKeyVersaoQRCode, VersaoQRCode );
+      Ini.WriteString( CSecWebService, CKeyVersaoBPe, VersaoBPe );
       Ini.WriteInteger( CSecWebService, CKeyFormaEmissaoNFe, FormaEmissaoNFe );
       Ini.WriteInteger( CSecWebService, CKeyFormaEmissaoCTe, FormaEmissaoCTe );
       Ini.WriteInteger( CSecWebService, CKeyFormaEmissaoMDFe, FormaEmissaoMDFe );
       Ini.WriteInteger( CSecWebService, CKeyFormaEmissaoGNRe, FormaEmissaoGNRe );
+      Ini.WriteInteger( CSecWebService, CKeyFormaEmissaoBPe, FormaEmissaoBPe );
       Ini.WriteInteger( CSecWebService, CKeyAmbiente, Ambiente );
       Ini.WriteString( CSecWebService, CKeyUF, UF );
       Ini.WriteBool( CSecWebService, CKeyAjustarAut, AjustarAut );
@@ -963,6 +983,8 @@ begin
       Ini.WriteString( CSecEmail, CKeyAssuntoCTe, AssuntoCTe );
       Ini.WriteString( CSecEmail, CKeyMensagemMDFe, MensagemMDFe );
       Ini.WriteString( CSecEmail, CKeyAssuntoMDFe, AssuntoMDFe );
+      Ini.WriteString( CSecEmail, CKeyMensagemBPe, MensagemBPe );
+      Ini.WriteString( CSecEmail, CKeyAssuntoBPe, AssuntoBPe );
     end;
 
     with DFe.WebService.NFe do
@@ -1021,6 +1043,7 @@ begin
       Ini.WriteBool( CSecDANFE,  CKeyDANFEImpDescPorc               , ImpDescPorc );
       Ini.WriteBool( CSecDANFE,  CKeyDANFEMostrarPreview            , MostrarPreview );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFECopias                 , Copias );
+      Ini.WriteInteger( CSecDANFE,  CKeyDANFECopiasNFCe             , CopiasNFCe );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFELarguraCodigoProduto   , LarguraCodigoProduto );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEEspessuraBorda         , EspessuraBorda );
       Ini.WriteInteger( CSecDANFE,  CKeyDANFEFonteRazao             , FonteRazao );
@@ -1070,11 +1093,13 @@ begin
       Ini.WriteBool(CSecArquivos,    CKeyArquivosAtualizarXMLCancelado,       AtualizarXMLCancelado       );
       Ini.WriteBool(CSecArquivos,    CKeyArquivosNormatizarMunicipios,        NormatizarMunicipios        );
       Ini.WriteBool(CSecArquivos,    CKeyArquivosUsarSeparadorPathPDF,        UsarSeparadorPathPDF        );
+      Ini.WriteBool(CSecArquivos,    CKeyArquivosSepararPorNome,              SepararPorNome              );
       Ini.WriteString(CSecArquivos,  CKeyArquivosPathNFe,                     PathNFe                     );
       Ini.WriteString(CSecArquivos,  CKeyArquivosPathInu,                     PathInu                     );
       Ini.WriteString(CSecArquivos,  CKeyArquivosPathDPEC,                    PathDPEC                    );
       Ini.WriteString(CSecArquivos,  CKeyArquivosPathEvento,                  PathEvento                  );
       Ini.WriteString(CSecArquivos,  CKeyArquivosPathArqTXT,                  PathArqTXT                  );
+      Ini.WriteString(CSecArquivos,  CKeyArquivosPathDownload,                PathDownload                );
     end;
 
     with SAT do
@@ -1161,6 +1186,12 @@ begin
       ini.WriteString(CSecSATSwH, CKeySATSwHAssinatura, Assinatura);
     end;
 
+    with SAT.SATEmail do
+    begin
+      ini.WriteString(CSecSATEmail, CKeySATEmailAssunto, AssuntoSAT);
+      ini.WriteString(CSecSATEmail, CKeySATEmailMensagem, MensagemSAT);
+    end;
+
     with IntegradorFiscal do
     begin
       ini.WriteString(CSecSATIntegrador, CKeySATIntegradorInput,       Input);
@@ -1239,6 +1270,7 @@ begin
       ini.WriteString( CSecBOLETO, CKeyBOLETODigitoConta,   DigitoConta   );
       ini.WriteString( CSecBOLETO, CKeyBOLETOAgencia,       Agencia       );
       ini.WriteString( CSecBOLETO, CKeyBOLETODigitoAgencia, DigitoAgencia );
+      ini.WriteString( CSecBOLETO, CKeyBOLETODigitoAgenciaConta, DigitoAgenciaConta );
       ini.WriteString( CSecBOLETO, CKeyBOLETOCodCedente,    CodCedente    );
       ini.WriteString( CSecBOLETO, CKeyBOLETOLocalPagamento,LocalPagamento );
     end;
@@ -1494,6 +1526,7 @@ begin
       Confirmacao               := Ini.ReadBool( CSecEmail, CKeyEmailConfirmacao, Confirmacao );
       SegundoPlano              := Ini.ReadBool( CSecEmail, CKeyEmailSegundoPlano, SegundoPlano );
       Codificacao               := Ini.ReadString( CSecEmail, CKeyEmailCodificacao, Codificacao );
+      HTML                      := Ini.ReadBool( CSecEmail, CKeyEmailHTML, HTML );
     end;
 
     with DFe do
@@ -1510,6 +1543,7 @@ begin
       ArquivoWebServicesGNRe    := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServicesGNRe, AcertaPath( CACBrGNREServicosIni ) );
       ArquivoWebServiceseSocial := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServiceseSocial, AcertaPath( CACBreSocialServicosIni ) );
       ArquivoWebServicesReinf   := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServicesReinf, AcertaPath( CACBrReinfServicosIni ) );
+      ArquivoWebServicesBPe     := Ini.ReadString( CSecACBrNFeMonitor, CKeyArquivoWebServicesBPe, AcertaPath( CACBrBPeServicosIni ) );
       ValidarDigest             := Ini.ReadBool( CSecACBrNFeMonitor, CKeyValidarDigest, ValidarDigest );
       TimeoutWebService         := Ini.ReadInteger( CSecACBrNFeMonitor, CKeyTimeoutWebService, TimeoutWebService );
     end;
@@ -1547,10 +1581,12 @@ begin
       VersaoeSocial             := Ini.ReadString( CSecWebService, CKeyVersaoeSocial, CvalueVersaoeSocial );
       VersaoReinf               := Ini.ReadString( CSecWebService, CKeyVersaoReinf, CvalueVersaoReinf );
       VersaoQRCode              := Ini.ReadString( CSecWebService, CKeyVersaoQRCode, CvalueVersaoQRCode );
+      VersaoBPe                 := Ini.ReadString( CSecWebService, CKeyVersaoBPe, VersaoBPe );
       FormaEmissaoNFe           := Ini.ReadInteger( CSecWebService, CKeyFormaEmissaoNFe, DFe.Impressao.Geral.FormaEmissao );
       FormaEmissaoCTe           := Ini.ReadInteger( CSecWebService, CKeyFormaEmissaoCTe, DFe.Impressao.Geral.FormaEmissao );
       FormaEmissaoGNRe          := Ini.ReadInteger( CSecWebService, CKeyFormaEmissaoGNRe, DFe.Impressao.Geral.FormaEmissao );
       FormaEmissaoMDFe          := Ini.ReadInteger( CSecWebService, CKeyFormaEmissaoMDFe, DFe.Impressao.Geral.FormaEmissao );
+      FormaEmissaoBPe           := Ini.ReadInteger( CSecWebService, CKeyFormaEmissaoBPe, DFe.Impressao.Geral.FormaEmissao );
       Ambiente                  := Ini.ReadInteger( CSecWebService, CKeyAmbiente, Ambiente);
       UF                        := Ini.ReadString( CSecWebService, CKeyUF, UF);
       AjustarAut                := Ini.ReadBool( CSecWebService, CKeyAjustarAut, AjustarAut);
@@ -1587,6 +1623,8 @@ begin
       AssuntoCTe                := Ini.ReadString( CSecEmail, CKeyAssuntoCTe, AssuntoCTe);
       MensagemMDFe              := Ini.ReadString( CSecEmail, CKeyMensagemMDFe, MensagemMDFe );
       AssuntoMDFe               := Ini.ReadString( CSecEmail, CKeyAssuntoMDFe, AssuntoMDFe);
+      MensagemBPe               := Ini.ReadString( CSecEmail, CKeyMensagemBPe, MensagemBPe );
+      AssuntoBPe                := Ini.ReadString( CSecEmail, CKeyAssuntoBPe, AssuntoBPe);
     end;
 
     with DFe.WebService.NFe do
@@ -1650,6 +1688,7 @@ begin
       ImpDescPorc               :=  Ini.ReadBool( CSecDANFE,  CKeyDANFEImpDescPorc                       , ImpDescPorc );
       MostrarPreview            :=  Ini.ReadBool( CSecDANFE,  CKeyDANFEMostrarPreview                    , MostrarPreview );
       Copias                    :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFECopias                         , Copias );
+      CopiasNFCe                :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFECopiasNFCe                     , CopiasNFCe );
       LarguraCodigoProduto      :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFELarguraCodigoProduto           , LarguraCodigoProduto );
       EspessuraBorda            :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEEspessuraBorda                 , EspessuraBorda );
       FonteRazao                :=  Ini.ReadInteger( CSecDANFE,  CKeyDANFEFonteRazao                     , FonteRazao );
@@ -1699,11 +1738,13 @@ begin
       AtualizarXMLCancelado      := Ini.ReadBool( CSecArquivos,    CKeyArquivosAtualizarXMLCancelado,       AtualizarXMLCancelado       );
       NormatizarMunicipios       := Ini.ReadBool( CSecArquivos,    CKeyArquivosNormatizarMunicipios,        NormatizarMunicipios        );
       UsarSeparadorPathPDF       := Ini.ReadBool( CSecArquivos,    CKeyArquivosUsarSeparadorPathPDF,        UsarSeparadorPathPDF        );
+      SepararPorNome             := Ini.ReadBool( CSecArquivos,    CKeyArquivosSepararPorNome,              SepararPorNome              );
       PathNFe                    := Ini.ReadString(CSecArquivos,   CKeyArquivosPathNFe,                     PathNFe                     );
       PathInu                    := Ini.ReadString(CSecArquivos,   CKeyArquivosPathInu,                     PathInu                     );
       PathDPEC                   := Ini.ReadString(CSecArquivos,   CKeyArquivosPathDPEC,                    PathDPEC                    );
       PathEvento                 := Ini.ReadString(CSecArquivos,   CKeyArquivosPathEvento,                  PathEvento                  );
       PathArqTXT                 := Ini.ReadString(CSecArquivos,   CKeyArquivosPathArqTXT,                  PathArqTXT                  );
+      PathDownload               := Ini.ReadString(CSecArquivos,   CKeyArquivosPathDownload,                PathDownload                );
     end;
 
     with DFe.RespTecnico do
@@ -1810,6 +1851,12 @@ begin
       Assinatura            := ini.ReadString(CSecSATSwH, CKeySATSwHAssinatura, Assinatura);
     end;
 
+    with SAT.SATEmail do
+    begin
+      AssuntoSAT            := ini.ReadString(CSecSATEmail, CKeySATEmailAssunto, AssuntoSAT);
+      MensagemSAT           := ini.ReadString(CSecSATEmail, CKeySATEmailMensagem, MensagemSAT);
+    end;
+
     with IntegradorFiscal do
     begin
       Input                 :=  ini.ReadString(CSecSATIntegrador, CKeySATIntegradorInput,       Input);
@@ -1888,6 +1935,7 @@ begin
       DigitoConta            :=  ini.ReadString( CSecBOLETO, CKeyBOLETODigitoConta,      DigitoConta            );
       Agencia                :=  ini.ReadString( CSecBOLETO, CKeyBOLETOAgencia,          Agencia                );
       DigitoAgencia          :=  ini.ReadString( CSecBOLETO, CKeyBOLETODigitoAgencia,    DigitoAgencia          );
+      DigitoAgenciaConta     :=  ini.ReadString( CSecBOLETO, CKeyBOLETODigitoAgenciaConta, DigitoAgenciaConta   );
       CodCedente             :=  ini.ReadString( CSecBOLETO, CKeyBOLETOCodCedente,       CodCedente             );
       LocalPagamento         :=  ini.ReadString( CSecBOLETO, CKeyBOLETOLocalPagamento,   LocalPagamento         );
     end;
@@ -2122,6 +2170,7 @@ begin
     Confirmacao               := False;
     SegundoPlano              := False;
     Codificacao               := '';
+    HTML                      := False;
   end;
 
   with DFe do
@@ -2138,6 +2187,7 @@ begin
     ArquivoWebServicesGNRe    := AcertaPath( 'ACBrGNREServicos.ini' );
     ArquivoWebServiceseSocial := AcertaPath( 'ACBreSocialServicos.ini' );
     ArquivoWebServicesReinf   := AcertaPath( 'ACBrReinfServicos.ini' );
+    ArquivoWebServicesBPe     := AcertaPath( 'ACBrBPeServicos.ini' );
     ValidarDigest             := True;
     TimeoutWebService         := 15;
   end;
@@ -2175,10 +2225,12 @@ begin
     VersaoeSocial             := '02_04_02';
     VersaoReinf               := '1_03_02';
     VersaoQRCode              := '0';
+    VersaoBPe                 := '1.00';
     FormaEmissaoNFe           := 0;
     FormaEmissaoCTe           := 0;
     FormaEmissaoGNRe          := 0;
     FormaEmissaoMDFe          := 0;
+    FormaEmissaoBPe           := 0;
     Ambiente                  := 1;
     UF                        := 'SP';
     AjustarAut                := False;
@@ -2215,6 +2267,8 @@ begin
     AssuntoCTe                := '';
     MensagemMDFe              := '';
     AssuntoMDFe               := '';
+    MensagemBPe               := '';
+    AssuntoBPe                := '';
   end;
 
   with DFe.WebService.NFe do
@@ -2224,7 +2278,7 @@ begin
 
   with DFe.Impressao.NFCe.Emissao do
   begin
-    Modelo                    := 0;
+    Modelo                    := CEmissaoFortes;
     ModoImpressaoEvento       := 0;
     ImprimirItem1Linha        := True;
     ImprimirDescAcresItem     := True;
@@ -2270,6 +2324,7 @@ begin
     ImpDescPorc               :=  True;
     MostrarPreview            :=  False;
     Copias                    :=  1;
+    CopiasNFCe                :=  1;
     LarguraCodigoProduto      :=  40;
     EspessuraBorda            :=  1;
     FonteRazao                :=  8;
@@ -2319,11 +2374,13 @@ begin
     AtualizarXMLCancelado      :=  True;
     NormatizarMunicipios       :=  True;
     UsarSeparadorPathPDF       :=  True;
+    SepararPorNome             :=  False;
     PathNFe                    :=  AcertaPath('Arqs');
     PathInu                    :=  AcertaPath('Arqs');
     PathDPEC                   :=  AcertaPath('Arqs');
     PathEvento                 :=  AcertaPath('Arqs');
     PathArqTXT                 :=  AcertaPath('TXT');
+    PathDownload               :=  AcertaPath('Arqs');
   end;
 
   with DFe.RespTecnico do
@@ -2430,6 +2487,12 @@ begin
     Assinatura            := '';
   end;
 
+  with SAT.SATEmail do
+  begin
+    AssuntoSAT             := '';
+    MensagemSAT            := '';
+  end;
+
   with IntegradorFiscal do
   begin
     Input                 := 'c:\Integrador\Input\';
@@ -2508,6 +2571,7 @@ begin
     DigitoConta            :=  '';
     Agencia                :=  '';
     DigitoAgencia          :=  '';
+    DigitoAgenciaConta     :=  '';
     CodCedente             :=  '';
     LocalPagamento         :=  '';
   end;

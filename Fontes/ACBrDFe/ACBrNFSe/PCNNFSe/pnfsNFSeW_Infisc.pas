@@ -50,8 +50,8 @@ type
 
   TNFSeW_Infisc = class(TNFSeWClass)
   private
-    dTotBCISS: Double;
-    dTotISS: Double;
+    FdTotBCISS: Double;
+    FdTotISS: Double;
   protected
 
     // **************************** Versão 1.00
@@ -76,10 +76,7 @@ type
     procedure GerarXML_Infisc_v11;
 
     // **************************** Ambas Versões
-    procedure GerarRPSSubstituido;
     procedure GerarTransportadora;
-    procedure GerarIntermediarioServico;
-    procedure GerarServicoValores;
     procedure GerarConstrucaoCivil;
 
   public
@@ -242,8 +239,8 @@ var
   i, GeraTag: Integer;
   cServ, xServ: String;
 begin
-  dTotBCISS := 0;
-  dTotISS   := 0;
+  FdTotBCISS := 0;
+  FdTotISS   := 0;
 
   for i := 0 to NFSe.Servico.ItemServico.Count-1 do
   begin
@@ -265,7 +262,7 @@ begin
     Gerador.wCampoNFSe(tcDe2, '', 'vServ' , 01, 015, 0, NFSe.Servico.ItemServico.Items[i].ValorServicos, '');
     Gerador.wCampoNFSe(tcDe2, '', 'vDesc' , 01, 015, 0, NFSe.Servico.ItemServico.Items[i].DescontoIncondicionado, '');
 
-    if Nfse.RegimeEspecialTributacao = retSimplesNacional then
+    if ( Nfse.RegimeEspecialTributacao = retSimplesNacional ) or ( Nfse.OptanteSimplesNacional = snSim ) then
       GeraTag := 1
     else
       GeraTag := 0;
@@ -274,8 +271,8 @@ begin
     Gerador.wCampoNFSe(tcDe2, '', 'pISS'  , 01, 015, GeraTag, NFSe.Servico.ItemServico.Items[i].Aliquota, '');
     Gerador.wCampoNFSe(tcDe2, '', 'vISS'  , 01, 015, GeraTag, NFSe.Servico.ItemServico.Items[i].ValorIss, '');
 
-    dTotBCISS := dTotBCISS + NFSe.Servico.ItemServico.Items[i].BaseCalculo;
-    dTotISS   := dTotISS   + NFSe.Servico.ItemServico.Items[i].ValorIss;
+    FdTotBCISS := FdTotBCISS + NFSe.Servico.ItemServico.Items[i].BaseCalculo;
+    FdTotISS   := FdTotISS   + NFSe.Servico.ItemServico.Items[i].ValorIss;
 
     Gerador.wCampoNFSe(tcDe2, '', 'pRed', 01, 15, 1, 0, '');
     Gerador.wCampoNFSe(tcDe2, '', 'vRed', 01, 15, 0, 0, '');
@@ -378,8 +375,8 @@ begin
 
   // Total Retenção ISSQN
   Gerador.wGrupoNFSe('ISS');
-  Gerador.wCampoNFSe(tcDe2, '', 'vBCISS'  , 01, 15, 0, dTotBCISS, '');
-  Gerador.wCampoNFSe(tcDe2, '', 'vISS'    , 01, 15, 0, dTotISS, '');
+  Gerador.wCampoNFSe(tcDe2, '', 'vBCISS'  , 01, 15, 0, FdTotBCISS, '');
+  Gerador.wCampoNFSe(tcDe2, '', 'vISS'    , 01, 15, 0, FdTotISS, '');
   Gerador.wCampoNFSe(tcDe2, '', 'vBCSTISS', 01, 15, 1, 0, '');
   Gerador.wCampoNFSe(tcDe2, '', 'vSTISS'  , 01, 15, 1, NFSe.Servico.Valores.ValorIssRetido, '');
   Gerador.wGrupoNFSe('/ISS');
@@ -559,8 +556,8 @@ var
   i, GeraTag: Integer;
   cServ, xServ: String;
 begin
-  dTotBCISS := 0;
-  dTotISS   := 0;
+  FdTotBCISS := 0;
+  FdTotISS   := 0;
 
   for i := 0 to NFSe.Servico.ItemServico.Count-1 do
   begin
@@ -587,9 +584,11 @@ begin
     Gerador.wCampoNFSe(tcDe2, '', 'vDesc', 01, 15, 0, NFSe.Servico.ItemServico.Items[i].DescontoIncondicionado, '');
     Gerador.wCampoNFSe(tcDe2, '', 'vDed' , 01, 15, 0, NFSe.Servico.ItemServico.Items[i].vDed, '');
 
-    if SituacaoTributariaToStr(NFSe.Servico.Valores.IssRetido) = '2' then
+    if NFSe.Servico.Valores.IssRetido = stNormal then
     begin  // 1 - stRetencao ; 2 - stNormal ; 3 - stSubstituicao
-      if Nfse.RegimeEspecialTributacao = retSimplesNacional then
+
+      // Alterado de = para <> por Italo em 28/05/2019
+      if Nfse.RegimeEspecialTributacao <> retSimplesNacional then
         GeraTag := 1
       else
         GeraTag := 0;
@@ -598,8 +597,8 @@ begin
       Gerador.wCampoNFSe(tcDe2, '', 'pISS'  , 01, 15, GeraTag, NFSe.Servico.ItemServico.Items[i].Aliquota, '');
       Gerador.wCampoNFSe(tcDe2, '', 'vISS'  , 01, 15, GeraTag, NFSe.Servico.ItemServico.Items[i].ValorIss, '');
 
-      dTotBCISS := dTotBCISS + NFSe.Servico.ItemServico.Items[i].BaseCalculo;
-      dTotISS   := dTotISS   + NFSe.Servico.ItemServico.Items[i].ValorIss;
+      FdTotBCISS := FdTotBCISS + NFSe.Servico.ItemServico.Items[i].BaseCalculo;
+      FdTotISS   := FdTotISS   + NFSe.Servico.ItemServico.Items[i].ValorIss;
     end;
 
     // Retenção INSS
@@ -647,7 +646,7 @@ begin
     Gerador.wGrupoNFSe('/serv');
 
     // Retenção ISSQN
-    if SituacaoTributariaToStr(NFSe.Servico.Valores.IssRetido) = '1' then
+    if NFSe.Servico.Valores.IssRetido = stRetencao then
     begin  // 1 - stRetencao ; 2 - stNormal ; 3 - stSubstituicao
       Gerador.wGrupoNFSe('ISSST');
       Gerador.wCampoNFSe(tcDe2, '', 'vBCST ', 01, 15, 1, NFSe.Servico.ItemServico.Items[i].ValorServicos, '');
@@ -703,7 +702,7 @@ begin
     Gerador.wCampoNFSe(tcDe2, '', 'vtDespesas', 01, 15, 1, NFSe.Servico.Valores.ValorDespesasNaoTributaveis, '');
 
   // Total Retenção ISSQN
-  if SituacaoTributariaToStr(NFSe.Servico.Valores.IssRetido) = '1' then
+  if NFSe.Servico.Valores.IssRetido = stRetencao then
   begin  // 1 - stRetencao
     Gerador.wGrupoNFSe('ISS');
     Gerador.wCampoNFSe(tcDe2, '', 'vBCSTISS', 01, 15, 1, NFSe.Servico.Valores.ValorServicos, '');
@@ -711,12 +710,11 @@ begin
     Gerador.wGrupoNFSe('/ISS');
   end;
 
-  if SituacaoTributariaToStr(NFSe.Servico.Valores.IssRetido) = '2' then
+  if NFSe.Servico.Valores.IssRetido = stNormal then
   begin  // 2 - stNormal
     Gerador.wGrupoNFSe('ISS');
-    Gerador.wCampoNFSe(tcDe2, '', 'vBCISS', 01, 15, 0, dTotBCISS, '');
-    Gerador.wCampoNFSe(tcDe2, '', 'vISS'  , 01, 15, 0, dTotISS, '');
-
+    Gerador.wCampoNFSe(tcDe2, '', 'vBCISS', 01, 15, 0, FdTotBCISS, '');
+    Gerador.wCampoNFSe(tcDe2, '', 'vISS'  , 01, 15, 0, FdTotISS, '');
     Gerador.wGrupoNFSe('/ISS');
   end;
 
@@ -808,11 +806,6 @@ end;
 // **************************** Ambas Versões
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TNFSeW_Infisc.GerarRPSSubstituido;
-begin
-  // Não Definido
-end;
-
 procedure TNFSeW_Infisc.GerarTransportadora;
 begin
   if NFSe.Transportadora.xCpfCnpjTrans <> '' then
@@ -834,16 +827,6 @@ begin
 
     Gerador.wGrupoNFSe('/transportadora');
   end;
-end;
-
-procedure TNFSeW_Infisc.GerarIntermediarioServico;
-begin
-  // Não Definido
-end;
-
-procedure TNFSeW_Infisc.GerarServicoValores;
-begin
-  // Não Definido
 end;
 
 procedure TNFSeW_Infisc.GerarConstrucaoCivil;
@@ -873,7 +856,7 @@ var
   lItem: Integer;
   lItemDepesa: TDespesaCollectionItem;
 begin
-  //Criação de desepsas adicionais não tributaveis
+  //Criação de despesas adicionais não tributaveis
   {Usado para inclusão de serviços que não são tributaveis e agregam valor no total da nota}
   if NFSe.Despesa.Count > 0 then
   begin

@@ -44,6 +44,57 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+27/06/2019
+-- ACBrDFeConfiguracoes --
+[+] Implementado a classe que contem as propriedades de Download utilizadas
+    pelo método DistribuicaoDFe, acrescentado a função GetPathDownloadEvento.
+   Por: Italo Jurisato Junior
+
+24/06/2019
+-- ACBrDFeXsLibXml2 --
+[-] Corrigido erro ao assinar lote com RPS contendo assinatura.
+   (Por: Rafael Teno Dias)
+
+14/06/2019
+-- ACBrDFeUtil --
+[-] Ficou faltando um "not" no IF que chama a função que valida o código do 
+    documento fiscal
+  Por: Italo Jurisato Junior
+
+14/06/2019
+-- ACBrDFeUtil --
+[+] Adicionado as funções:
+      function GerarCodigoDFe(AnDF: Integer): integer;
+      function ValidarCodigoDFe(AcDF, AnDF: Integer): Boolean;
+    responsáveis por gerar e validar o código do documento fiscal.
+    A validação leva em consideração a regra B03-10 publicada na
+    NT 2019/001.
+  Por: Italo Jurisato Junior
+
+28/05/2019
+-- ACBrDFeConfiguracoes --
+[*] Ajustando os campos do proxy no ini para ficar compativel com o ACBrLib.
+   (Por: Rafael Teno Dias)
+
+24/05/2019
+-- ACBrDFeXsLibXml2 --
+[-] Correção no método "CanonC14n", para usar todos os atributos de NameSpace
+    especificados no Nó Root do XML
+    https://www.projetoacbr.com.br/forum/topic/51135-notablu-assinatura-difere-do-calculado-no-cancelamento/
+
+[-] Ajuste no método "AdicionarNode", para funcionar com Tags com prefixo (:)
+    (por: DSA, e Italo Jurisato Jr)
+
+13/05/2019
+-- ACBrDFeSSL --
+[-] Correção no método: TDFeSSLXmlSignClass.AdicionarSignatureElement, que não
+    removia o final do XML, ao adicionar o Grupo de Assinatura...
+
+-- ACBrDFeXsLibXml2 --
+[-] Método "TDFeSSLXmlSignLibXml2.AdicionarNode", corrigido para adicionar
+    Grupo de Assinatura, dentro do Grupo "docElement"
+    (por: DSA)
+
 26/04/2019
 -- ACBrDFeXsLibXml2 --
 [*] Otimização de desempenho, no método Assinar

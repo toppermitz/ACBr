@@ -1124,6 +1124,7 @@ begin
                                'nfeAutorizacaoResult',
                                'nfeAutorizacaoLoteZipResult',
                                'nfeResultMsg',
+                               'nfeResultMsgZip',
                                'nfeRecepcaoLote2Result'],FPRetornoWS );
 
   VerificarSemResposta;
@@ -2270,6 +2271,12 @@ begin
       FPMsg := NFeRetorno.protNFe.xMotivo;
     end;
 
+    if not Assigned(FPDFeOwner) then //evita AV caso não atribua o Owner
+    begin
+     Result := True;
+     Exit;
+    end;
+
     with TACBrNFe(FPDFeOwner) do
     begin
       Result := CstatProcessado(NFeRetorno.CStat) or
@@ -3020,7 +3027,7 @@ begin
     if (FEvento.Evento[0].InfEvento.tpEvento = teCancelamento) and
        (TACBrNFe(FPDFeOwner).NotasFiscais.Count > 0) then
     begin
-      FPDFeOwner.Integrador.Parametros.Values['versaoDados'] :=  '1.00';
+      FPDFeOwner.Integrador.Parametros.Values['versaoDados'] :=  StringReplace(FormatFloat('0.00',TACBrNFe(FPDFeOwner).NotasFiscais.Items[0].NFe.infNFe.Versao),',','.',[rfReplaceAll]);
       FPDFeOwner.Integrador.Parametros.Values['NumeroNFCe'] := OnlyNumber(TACBrNFe(FPDFeOwner).NotasFiscais.Items[0].NFe.infNFe.ID);
       FPDFeOwner.Integrador.Parametros.Values['DataHoraNFCeGerado'] := FormatDateTime('yyyymmddhhnnss', TACBrNFe(FPDFeOwner).NotasFiscais.Items[0].NFe.Ide.dEmi);
       FPDFeOwner.Integrador.Parametros.Values['ValorNFCe'] := StringReplace(FormatFloat('0.00',TACBrNFe(FPDFeOwner).NotasFiscais.Items[0].NFe.Total.ICMSTot.vNF),',','.',[rfReplaceAll]);
@@ -3034,12 +3041,15 @@ procedure TNFeEnvEvento.DefinirDadosMsg;
 var
   EventoNFe: TEventoNFe;
   I, J, F: integer;
-  Lote, Evento, Eventos, EventosAssinados: AnsiString;
+  Lote, Evento, Eventos, EventosAssinados, AXMLEvento: AnsiString;
+  FErroValidacao: string;
+  MsgEventoEhValido, EventoEhValido: Boolean;
+  SchemaEventoNFe: TSchemaNFe;
 begin
   EventoNFe := TEventoNFe.Create;
   try
     EventoNFe.idLote := FidLote;
-
+    SchemaEventoNFe  := schErro;
     {(*}
     for I := 0 to FEvento.Evento.Count - 1 do
     begin
@@ -3057,18 +3067,21 @@ begin
         case InfEvento.tpEvento of
           teCCe:
           begin
+            SchemaEventoNFe := schEnvCCe;
             infEvento.detEvento.xCorrecao := FEvento.Evento[I].InfEvento.detEvento.xCorrecao;
             infEvento.detEvento.xCondUso := FEvento.Evento[I].InfEvento.detEvento.xCondUso;
           end;
 
           teCancelamento:
           begin
+            SchemaEventoNFe := schcancNFe;
             infEvento.detEvento.nProt := FEvento.Evento[I].InfEvento.detEvento.nProt;
             infEvento.detEvento.xJust := FEvento.Evento[I].InfEvento.detEvento.xJust;
           end;
 
           teCancSubst:
           begin
+            SchemaEventoNFe := schCancSubst;
             infEvento.detEvento.cOrgaoAutor := FEvento.Evento[I].InfEvento.detEvento.cOrgaoAutor;
             infEvento.detEvento.tpAutor := FEvento.Evento[I].InfEvento.detEvento.tpAutor;
             infEvento.detEvento.verAplic := FEvento.Evento[I].InfEvento.detEvento.verAplic;
@@ -3077,11 +3090,25 @@ begin
             infEvento.detEvento.chNFeRef := FEvento.Evento[I].InfEvento.detEvento.chNFeRef;
           end;
 
+          teManifDestConfirmacao:
+            SchemaEventoNFe := schManifDestConfirmacao;
+
+          teManifDestCiencia:
+            SchemaEventoNFe := schManifDestCiencia;
+
+          teManifDestDesconhecimento:
+            SchemaEventoNFe := schManifDestDesconhecimento;
+
           teManifDestOperNaoRealizada:
+          begin
+            SchemaEventoNFe := schManifDestOperNaoRealizada;
+
             infEvento.detEvento.xJust := FEvento.Evento[I].InfEvento.detEvento.xJust;
+          end;
 
           teEPECNFe:
           begin
+            SchemaEventoNFe := schEnvEPEC;
             infEvento.detEvento.cOrgaoAutor := FEvento.Evento[I].InfEvento.detEvento.cOrgaoAutor;
             infEvento.detEvento.tpAutor := FEvento.Evento[I].InfEvento.detEvento.tpAutor;
             infEvento.detEvento.verAplic := FEvento.Evento[I].InfEvento.detEvento.verAplic;
@@ -3102,6 +3129,11 @@ begin
           tePedProrrog1,
           tePedProrrog2:
           begin
+            if InfEvento.tpEvento = tePedProrrog1 then
+              SchemaEventoNFe := schPedProrrog1
+            else
+              SchemaEventoNFe := schPedProrrog2;
+
             infEvento.detEvento.nProt := FEvento.Evento[I].InfEvento.detEvento.nProt;
 
             for j := 0 to FEvento.Evento.Items[I].InfEvento.detEvento.itemPedido.count - 1 do
@@ -3118,6 +3150,11 @@ begin
           teCanPedProrrog1,
           teCanPedProrrog2:
           begin
+            if InfEvento.tpEvento = teCanPedProrrog1 then
+              SchemaEventoNFe := schCanPedProrrog1
+            else
+              SchemaEventoNFe := schCanPedProrrog2;
+
             infEvento.detEvento.idPedidoCancelado := FEvento.Evento[I].InfEvento.detEvento.idPedidoCancelado;
             infEvento.detEvento.nProt := FEvento.Evento[I].InfEvento.detEvento.nProt;
           end;
@@ -3166,8 +3203,62 @@ begin
 
     with TACBrNFe(FPDFeOwner) do
     begin
-      SSL.Validar(FPDadosMsg, GerarNomeArqSchema(FPLayout, StringToFloatDef(FPVersaoServico,0)), FPMsg);
+      MsgEventoEhValido := SSL.Validar(FPDadosMsg,
+                                       GerarNomeArqSchema(FPLayout, StringToFloatDef(FPVersaoServico,0)),
+                                       FPMsg);
     end;
+
+    if (not MsgEventoEhValido) or (SchemaEventoNFe = schErro) then
+    begin
+      if (SchemaEventoNFe = schErro) and (FPMsg='') then
+       FPMsg := 'Schema do Evento não foi definido';
+
+      FErroValidacao := ACBrStr('Falha na validação da Mensagem do Evento: ') +
+        FPMsg;
+
+      raise EACBrNFeException.CreateDef(FErroValidacao);
+    end;
+
+    // Realiza a validação de cada evento
+    Eventos := SeparaDados(EventoNFe.Gerador.ArquivoFormatoXML, 'envEvento');
+    I := Pos('<evento ', Eventos);
+    Eventos := NativeStringToUTF8( Copy(Eventos, I, length(Eventos)) );
+
+    while Eventos <> '' do
+    begin
+      F := Pos('</evento>', Eventos);
+
+      if F > 0 then
+      begin
+        Evento := Copy(Eventos, 1, F + 8);
+        Eventos := Copy(Eventos, F + 9, length(Eventos));
+
+        // Separa o XML especifico do Evento para ser Validado.
+        AXMLEvento := '<detEvento versao="' + FPVersaoServico + '" xmlns="' +
+                                                      ACBRNFE_NAMESPACE + '">' +
+                        SeparaDados(Evento, 'detEvento') +
+                      '</detEvento>';
+
+        with TACBrNFe(FPDFeOwner) do
+        begin
+          EventoEhValido := SSL.Validar(AXMLEvento,
+                                        GerarNomeArqSchemaEvento(SchemaEventoNFe,
+                                                             StringToFloatDef(FPVersaoServico, 0)),
+                                        FPMsg);
+        end;
+
+        if not EventoEhValido then
+        begin
+          FErroValidacao := ACBrStr('Falha na validação dos dados do Evento: ') +
+            FPMsg;
+
+          raise EACBrNFeException.CreateDef(FErroValidacao);
+        end;
+      end
+      else
+        Break;
+    end;
+
 
     for I := 0 to FEvento.Evento.Count - 1 do
       FEvento.Evento[I].InfEvento.id := EventoNFe.Evento[I].InfEvento.id;
@@ -3628,12 +3719,14 @@ begin
 
   case AItem.schema of
     schresEvento:
-      Result := FPConfiguracoesNFe.Arquivos.GetPathEvento(AItem.resEvento.tpEvento,
+      Result := FPConfiguracoesNFe.Arquivos.GetPathDownloadEvento(AItem.resEvento.tpEvento,
+                                                          AItem.resDFe.xNome,
                                                           AItem.resEvento.CNPJCPF,
                                                           Data);
 
     schprocEventoNFe:
-      Result := FPConfiguracoesNFe.Arquivos.GetPathEvento(AItem.procEvento.tpEvento,
+      Result := FPConfiguracoesNFe.Arquivos.GetPathDownloadEvento(AItem.procEvento.tpEvento,
+                                                          AItem.resDFe.xNome,
                                                           AItem.procEvento.CNPJ,
                                                           Data);
 
@@ -3790,7 +3883,7 @@ var
 begin
   CNPJ := OnlyNumber(ACNPJ);
 
-  if not ValidarCNPJ(CNPJ) then
+  if not ValidarCNPJouCPF(CNPJ) then
     raise EACBrNFeException.Create('CNPJ: ' + CNPJ + ACBrStr(', inválido.'));
 
   FInutilizacao.CNPJ := CNPJ;

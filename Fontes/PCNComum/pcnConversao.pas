@@ -122,7 +122,8 @@ type
                   teCancelamentoMDFeAutComCTe, teAverbacaoExportacao, teAutCteComplementar,
                   teCancCteComplementar,teCTeSubstituicao,teCTeAnulacao,teLiberacaoEPEC,teLiberacaoPrazoCanc,
                   teAutorizadoRedespacho,teautorizadoRedespIntermed,teAutorizadoSubcontratacao,
-                  teautorizadoServMultimodal, teCancSubst, teAlteracaoPoltrona);
+                  teautorizadoServMultimodal, teCancSubst, teAlteracaoPoltrona,
+                  teComprEntrega, teCancComprEntrega, teInclusaoDFe);
 
   TpcnIndicadorEmissor = (ieTodos, ieRaizCNPJDiferente);
   TpcnIndicadorContinuacao = (icNaoPossuiMaisDocumentos, icPossuiMaisDocumentos);
@@ -178,6 +179,12 @@ type
                 schresMDFe, schprocMDFe, schprocEventoMDFe,
                 schresBPe, schprocBPe, schprocEventoBPe);
   TForcarGeracaoTag = (fgtNunca, fgtSomenteProducao, fgtSomenteHomologacao, fgtSempre);
+
+  TStrToTpEvento = function (out ok: boolean; const s: String): TpcnTpEvento;
+  TStrToTpEventoDFe = record
+    StrToTpEventoMethod: TStrToTpEvento;
+    NomeDFe: String;
+  end;
 
 const
   TpcnTpEventoString : array[0..54] of String =('-99999', '110110', '110111',
@@ -291,7 +298,7 @@ function StrToTpCarroceria(out ok: boolean; const s: string): TpcteTipoCarroceri
 function ModeloNFToStr(const t: TpcteModeloNF): string;
 function StrToModeloNF(out ok: boolean; const s: string): TpcteModeloNF;
 
-function StrToTpEvento(out ok: boolean; const s: string): TpcnTpEvento;
+function StrToTpEvento_Old(out ok: boolean; const s: string): TpcnTpEvento;
 function TpEventoToStr(const t: TpcnTpEvento): string;
 function TpEventoToDescStr(const t: TpcnTpEvento): string;
 
@@ -377,6 +384,18 @@ function StrToTpNF(out ok: Boolean; const s: String): TpcnTipoNFe;
 
 function SchemaDFeToStr(const t: TSchemaDFe): String;
 function StrToSchemaDFe(const s: String): TSchemaDFe;
+
+function motDesICMSToStrTagPosText(const t: TpcnMotivoDesoneracaoICMS): string;
+function ISSQNcSitTribToStrTagPosText(const t: TpcnISSQNcSitTrib ): string;
+function indISSToStrTagPosText(const t: TpcnindISS ): string;
+function indIncentivoToStrTagPosText(const t: TpcnindIncentivo ): string;
+
+function StrToTpEventoDFe(out ok: boolean; const s, aDFe: string): TpcnTpEvento;
+
+procedure RegisterStrToTpEventoDFe(AConvertProcedure: TStrToTpEvento; ADFe: String);
+
+var
+  StrToTpEventoDFeList: array of TStrToTpEventoDFe;
 
 implementation
 
@@ -746,20 +765,20 @@ begin
   // ID -> N10b - Grupo de informação do ICMS ST devido para a UF de destino,nas operações interestaduais de produtos que tiveram retenção antecipada de ICMS por ST na UF do remetente. Repasse via Substituto Tributário. (v2.0)
   // ID -> N11  - ICMS devido para outras UF
   // ID -> N12  - Outros
-  result := EnumeradoToStr(t, ['', '00' , '10' , '20' , '30' , '40' , '41' , '50' , '51' ,
-                               '60' , '70' , '80' , '81', '90', '90', 'SN',
+  result := EnumeradoToStr(t, ['', '00', '10', '20', '30', '40', '41', '45', '50', '51',
+                               '60', '70', '80', '81', '90', '90', 'SN',
                                '10', '90', '41', '60'],
-                              [cstVazio, cst00, cst10, cst20, cst30, cst40, cst41, cst50, cst51,
+                              [cstVazio, cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51,
                               cst60, cst70, cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN,
                               cstPart10, cstPart90, cstRep41, cstRep60]);
 end;
 
 function StrToCSTICMS(out ok: boolean; const s: string): TpcnCSTIcms;
 begin
-  result := StrToEnumerado(ok, s, ['00', '10', '20', '30', '40', '41', '50', '51', '60',
+  result := StrToEnumerado(ok, s, ['00', '10', '20', '30', '40', '41', '45', '50', '51', '60',
                                    '70', '80', '81', '90', '91', 'SN',
                                    '10part', '90part', '41rep', '60rep'],
-                                  [cst00, cst10, cst20, cst30, cst40, cst41, cst50, cst51, cst60,
+                                  [cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51, cst60,
                                    cst70, cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN,
                                    cstPart10, cstPart90, cstRep41, cstRep60]);
 end;
@@ -788,8 +807,14 @@ begin
     '81 - ICMS DEVIDO À OUTRA UF',
     '90 - ICMS OUTROS',
     '90 - ICMS DEVIDO A UF DE ORIGEM DA PRESTACAO, QUANDO DIFERENTE DA UF DO EMITENTE',
-    '90 - SIMPLES NACIONAL'],
-    [cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51, cst60, cst70, cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN]);
+    '90 - SIMPLES NACIONAL',
+    '10 - TRIBUTADA E COM COBRANÇA DO ICMS POR SUBSTITUIÇÃO TRIBUTÁRIA - PARTILHA',
+    '90 - OUTROS - PARTILHA',
+    '41 - NÃO TRIBUTADO - REPASSE',
+    '60 - COBRADO ANTERIORMENTE POR SUBSTITUIÇÃO TRIBUTÁRIA - REPASSE'
+    ],
+    [cst00, cst10, cst20, cst30, cst40, cst41, cst45, cst50, cst51, cst60, cst70,
+    cst80, cst81, cst90, cstICMSOutraUF, cstICMSSN, cstPart10, cstPart90, cstRep41, cstRep60]);
 end;
 
 // N13 - Modalidade de determinação da BC do ICMS ******************************
@@ -1019,18 +1044,18 @@ begin
    [moNF011AAvulsa, moNFProdutor]);
 end;
 
-function StrToModeloNf(out ok: boolean; const s: string): TpcteModeloNF;
+function StrToModeloNF(out ok: boolean; const s: string): TpcteModeloNF;
 begin
   result := StrToEnumerado(ok, s, ['01','04'],
    [moNF011AAvulsa, moNFProdutor]);
 end;
 
-function StrToTpEvento(out ok: boolean;const s: string): TpcnTpEvento;
+function StrToTpEvento_Old(out ok: boolean;const s: string): TpcnTpEvento;
 begin
   result  := TpcnTpEvento( StrToEnumerado2(ok , s, TpcnTpEventoString ) );
 end;
 
-function TpEventoToStr(const t: TpcnTpEvento): String;
+function TpEventoToStr(const t: TpcnTpEvento): string;
 begin
   result := EnumeradoToStr2( t , TpcnTpEventoString );
 end;
@@ -1078,7 +1103,8 @@ begin
 end;
 
 
-function StrToEnumerado2(out ok: boolean;  const s: string; Const AString: array of string ): variant;
+function StrToEnumerado2(out ok: boolean; const s: string;
+  const AString: array of string): variant;
 // Atencao  não Funciona em Alguns Enumerados ja existentes
 var
   i: integer;
@@ -1514,13 +1540,13 @@ begin
                                   [mdRodoviario, mdAereo, mdAquaviario, mdFerroviario, mdDutoviario, mdMultimodal]);
 end;
 
-function TpNavegacaoToStr(const t: TTipoNavegacao): String;
+function TpNavegacaoToStr(const t: TTipoNavegacao): string;
 begin
   result := EnumeradoToStr(t, ['0','1'],
                               [tnInterior, tnCabotagem]);
 end;
 
-function StrToTpNavegacao(out ok: boolean; const s: String): TTipoNavegacao;
+function StrToTpNavegacao(out ok: boolean; const s: string): TTipoNavegacao;
 begin
   result := StrToEnumerado(ok, s, ['0','1'],
                                   [tnInterior, tnCabotagem]);
@@ -1586,6 +1612,92 @@ begin
   end;
 
   Result := TSchemaDFe( CodSchema );
+end;
+
+function motDesICMSToStrTagPosText(const t: TpcnMotivoDesoneracaoICMS): string;
+begin
+  // 1 – Táxi;
+  // 2 – Deficiente Físico;
+  // 3 – Produtor Agropecuário;
+  // 4 – Frotista/Locadora;
+  // 5 – Diplomático/Consular;
+  // 6 – Utilitários e Motocicletas da
+  // Amazônia Ocidental e Áreas de
+  // Livre Comércio (Resolução
+  // 714/88 e 790/94 – CONTRAN e
+  // suas alterações);
+  // 7 – SUFRAMA;
+  // 8 – Venda a Orgãos Publicos;
+  // 9 – outros. (v2.0)
+  // 10 – Deficiente Condutor (Convênio ICMS 38/12). (v3.1)
+  // 11 – Deficiente não Condutor (Convênio ICMS 38/12). (v3.1)
+  // 12 - Orgão Fomento
+  // 16 - Olimpiadas Rio 2016
+  // 90 - Solicitado pelo Fisco
+result := EnumeradoToStr(t, ['1 – Táxi', '2 – Deficiente Físico', '3 – Produtor Agropecuário',
+  '4 – Frotista/Locadora', '5 – Diplomático/Consular', '6 - Utilit./Motos da Am./Áreas Livre Com.',
+  '7 – SUFRAMA', '8 – Venda a Orgãos Publicos', '9 – Outros', '10 – Deficiente Condutor',
+  '11 – Deficiente não Condutor', '12 - Orgão Fomento', '16 - Olimpiadas Rio 2016', '90 - Solicitado pelo Fisco'],
+  [mdiTaxi, mdiDeficienteFisico, mdiProdutorAgropecuario, mdiFrotistaLocadora,
+   mdiDiplomaticoConsular, mdiAmazoniaLivreComercio, mdiSuframa, mdiVendaOrgaosPublicos,
+   mdiOutros, mdiDeficienteCondutor, mdiDeficienteNaoCondutor, mdiOrgaoFomento,
+   mdiOlimpiadaRio2016, mdiSolicitadoFisco]);
+end;
+
+function ISSQNcSitTribToStrTagPosText(const t: TpcnISSQNcSitTrib): string;
+begin
+  result := EnumeradoToStr(t, ['','N - Normal','R - Retida','S - Substituta','I - Isenta'],
+  [ISSQNcSitTribVazio , ISSQNcSitTribNORMAL, ISSQNcSitTribRETIDA, ISSQNcSitTribSUBSTITUTA,ISSQNcSitTribISENTA]);
+end;
+
+function indISSToStrTagPosText(const t: TpcnindISS): string;
+begin
+  result := EnumeradoToStr(t, ['1 - Exigível', '2 - Não incidência', '3 - Isenção', '4 - Exportação',
+                               '5 - Imunidade', '6 - Exig. Susp. Dec. Jud.', '7 - Exig. Susp. Proc. Adm.'],
+                              [iiExigivel, iiNaoIncidencia, iiIsencao, iiExportacao,
+                               iiImunidade, iiExigSuspDecisaoJudicial, iiExigSuspProcessoAdm]);
+end;
+
+function indIncentivoToStrTagPosText(const t: TpcnindIncentivo): string;
+begin
+  result := EnumeradoToStr(t, ['1 - Sim', '2 - Não'],
+                              [iiSim, iiNao]);
+end;
+
+function StrToTpEventoDFe(out ok: boolean; const s, aDFe: string): TpcnTpEvento;
+var
+  LenList, i: Integer;
+  UpperDFe: String;
+begin
+  Result := teNaoMapeado;
+  UpperDFe := UpperCase(aDFe);
+  // Varrendo lista de Métodos registrados, para ver se algum conheçe o "aDFe"
+  LenList := Length(StrToTpEventoDFeList);
+  For i := 0 to LenList-1 do
+    if (StrToTpEventoDFeList[i].NomeDFe = UpperDFe) then
+       Result := StrToTpEventoDFeList[i].StrToTpEventoMethod(ok, s);
+end;
+
+procedure RegisterStrToTpEventoDFe(AConvertProcedure: TStrToTpEvento;
+  ADFe: String);
+var
+  LenList, i: Integer;
+  UpperDFe: String;
+begin
+  UpperDFe := UpperCase(ADFe);
+  LenList := Length(StrToTpEventoDFeList);
+  // Verificando se já foi registrado antes...
+  For i := 0 to LenList-1 do
+    if (StrToTpEventoDFeList[i].NomeDFe = UpperDFe) then
+      Exit;
+
+  // Adicionando Novo Item na Lista
+  SetLength(StrToTpEventoDFeList, LenList+1);
+  with StrToTpEventoDFeList[LenList] do
+  begin
+    NomeDFe := UpperDFe;
+    StrToTpEventoMethod := AConvertProcedure;
+  end;
 end;
 
 end.

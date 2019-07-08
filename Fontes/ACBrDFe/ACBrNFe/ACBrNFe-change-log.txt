@@ -47,6 +47,84 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+27/06/2019
+-- ACBrNFeConfiguracoes --
+[*] Removido a classe que contem as propriedades de Download utilizadas
+    pelo método DistribuicaoDFe, pois agora se encontra na unit ACBrDFeConfiguracoes.
+   Por: Italo Jurisato Junior
+
+25/06/2019
+-- ACBrNFeServicos --
+[*] Atualização das URLs de QR-Code e de Consulta da UF: PI.
+  Por: José M S Junior
+
+24/06/2019
+-- ACBrNFeWebServices --
+[*] Tratamento do retorno do webservice de autorização NFe PE quando envio zipado.
+    https://www.projetoacbr.com.br/forum/topic/51801-retorno-do-webservice-sefaz-n%C3%A3o-tratado/
+  Por: Wladimir Isnard
+
+21/06/2019
+-- ACBrNFe --
+[*] Remoção de um IF no método Enviar que não tem mais nenhuma utilidade.
+-- ACBrNFeServicos --
+[*] Atualização das URLs de QR-Code e de Consulta da UF: PI.
+  Por: Italo Jurisato Junior
+
+17/06/2019
+-- ACBrNFeWebServices --
+[*] Ao separar o evento para a sua validação ficou faltando o atributo versao.
+  Por: Italo Jurisato Junior
+
+14/06/2019
+-- ACBrNFeNotasFiscais --
+[*] https://www.projetoacbr.com.br/forum/topic/51923-rejei%C3%A7%C3%A3o-725-nfc-e-com-cfop-inv%C3%A1lido/
+  Por: pcBonetti
+
+14/06/2019
+-- ACBrNFeWebServices --
+[*] A variável SchemaEventoNFe não estava sendo inicializada com o valor schErro.
+  Por: Waldir Paim
+
+14/06/2019
+-- Diversos --
+[+] Adicionado a função especifica para converter o código do evento para 
+    o enumerador, adicionado a função para gerar o path para o Download de
+    eventos e implementado a validação completa de um evento antes do seu
+    envio.
+  Por: Italo Jurisato Junior
+
+07/06/2019
+-- ACBrECFVirtualNFCe --
+[+] Adicionado evento QuandoImprimirDocumento que permite ao programador tratar sua
+    própria impressão.
+    https://www.projetoacbr.com.br/forum/topic/51814-sugest%C3%B5es-para-o-refactoring-dos-ecf-virtuais/
+  Por: EMBarbosa
+
+06/06/2019
+-- ACBrNFeDANFEClass --
+[+] Inclusão da propriedade "DetRastros" para configurar impressão
+    individualizada das tags do detalhamento específico "rastro" no DANFE.
+    https://www.projetoacbr.com.br/forum/topic/51434-detalhamento-específico-melhoria-impressão-fonte-disponivel/
+  Por: -=Ma®©oS=-
+
+22/05/2019
+-- ACBrNFeWebServices --
+[-] Ajuste no Método Inutiliza, para validar emitente com CPF
+  Por: Jose M S Junior
+
+15/05/2019
+-- pcnNFeRTXT, pcnLAyoutTXT --
+[*] Atualizado layout TXT com ultimas NTs.
+  Por: Jose M S Junior
+
+15/05/2019
+-- ACBrNFeNotasFiscais--
+[-] remoção de regras antigas de validação da série
+[-] alterado método de validação do cnpj do emitente para 
+    considerar CPF (Produtor Rural)
+   Por: Régys Silveira
+
 09/05/2019
 -- ACBrECFVirtualNFCe --
 [*] Atribuir a chave da NFe a propriedade ChaveCupom antes de levantar a exception em caso de falha de envia, possibilitando pegar a chave da NFe.

@@ -47,6 +47,48 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+02/07/2019
+-- ACBrCTe / ACBrCTeConfiguracoes --
+[*] Acrescentado um método para setar a propriedade GerarInfCTeSupl e 
+    corrigido a função GetURLQRCode.
+   Por: Italo Jurisato Junior
+
+27/06/2019
+-- ACBrCTeConfiguracoes --
+[*] Removido a classe que contem as propriedades de Download utilizadas
+    pelo método DistribuicaoDFe, pois agora se encontra na unit ACBrDFeConfiguracoes.
+   Por: Italo Jurisato Junior
+
+18/06/2019
+-- ACBrCTeConhecimentos --
+[*] Existem 2 campos refCteAnu um para a versão 2.00 e outro para a 3.00
+    Só estava sendo alimentado o campo referente a versão 2.00
+   Por: Italo Jurisato Junior
+
+17/06/2019
+-- ACBrCTeConhecimentos --
+[*] Incluido a leitura do campo "chCT"e ao ler o arquivo INI para CTe Substituto.
+   Por: José M S Junior
+
+14/06/2019
+-- Diversos --
+[+] Adicionado a função especifica para converter o código do evento para 
+    o enumerador, adicionado a propridade de configuração GerarInfCTeSupl,
+    que permite gerar ou não o grupo infCTeSupl que vai conter um campo
+    com a string do QR-Code previsto na versão 3.00a.
+    (ainda não esta disponivel o ambiente de homologação)
+  Por: Italo Jurisato Junior
+
+11/06/2019
+-- ACBrCTeConhecimentos --
+[*] Incluido a leitura do campo indAlteraToma ao ler o arquivo INI.
+   Por: Italo Jurisato Junior
+
+24/05/2019
+-- ACBrCTeWebservices --
+[*] Corrigido a montagem do XML do evento para ser validado corretamente
+   Por: Italo Jurisato Junior
+
 07/05/2019
 -- pcteEnvEventoCTe --
 [-] Corrigido a nomenclatura do campo usado pelo evento: Prestação de Serviço em Desacordo.

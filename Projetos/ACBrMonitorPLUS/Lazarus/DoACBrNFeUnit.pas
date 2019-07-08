@@ -37,7 +37,7 @@ interface
 
 uses
   Classes, SysUtils, ACBrUtil, ACBrLibNFeRespostas,
-  ACBrNFe, ACBrLibResposta, ACBrMonitorConfig,
+  ACBrNFe, ACBrMonitorConfig,
   ACBrMonitorConsts, ACBrDFeUtil, UtilUnit, DoACBrDFeUnit,
   CmdUnit, ACBrNFeDANFeRLClass, ACBrPosPrinter, ACBrNFeDANFeESCPOS;
 
@@ -437,9 +437,11 @@ implementation
 
 uses
   IniFiles, DateUtils, Forms, strutils,
-  ACBrDFeConfiguracoes,
+  DoACBrUnit,
+  ACBrDFeConfiguracoes, ACBrNFeDANFEClass,
+  ACBrLibResposta, ACBrLibDistribuicaoDFe, ACBrLibConsReciDFe,
   pcnConversao, pcnConversaoNFe,
-  pcnAuxiliar, pcnNFeR, pcnNFeRTXT, DoACBrUnit, pcnNFe, ACBrNFeDANFEClass;
+  pcnAuxiliar, pcnNFeR, pcnNFeRTXT, pcnNFe;
 
 { TACBrObjetoNFe }
 
@@ -687,7 +689,7 @@ begin
       Resp.NProt := nProt;
       Resp.DigVal := digVal;
 
-      if Gerar then
+      //if Gerar then
         //Resp.Arquivo := fACBrNFe.NotasFiscais.Items[NotasFiscaisID].NomeArq+sLineBreak;
           {PathWithDelim(fACBrNFe.Configuracoes.Arquivos.PathSalvar) +
           OnlyNumber(fACBrNFe.NotasFiscais.Items[NotasFiscaisID].NFe.infNFe.ID) +
@@ -1135,7 +1137,7 @@ begin
     ACBrNFe.WebServices.ConsultaCadastro.Executar;
     Resp := TConsultaCadastroResposta.Create(resINI);
     try
-      Resp.ProcessarResposta(ACBrNFe);
+      Resp.Processar(ACBrNFe);
       fpCmd.Resposta:= Resp.Msg + sLineBreak + Resp.Gerar ;
 
     finally
@@ -1176,7 +1178,7 @@ begin
     ACBrNFe.WebServices.Inutiliza(ACNPJ, AJustificativa, AAno, AModelo, ASerie, ANumInicial, ANumFinal);
     Resposta := TInutilizarNFeResposta.Create(resINI);
     try
-      Resposta.ProcessarResposta(ACBrNFe);
+      Resposta.Processar(ACBrNFe);
       fpCmd.Resposta:= Resposta.Msg + sLineBreak + Resposta.Gerar ;
 
     finally
@@ -1285,9 +1287,13 @@ begin
     DoValidarIntegradorNFCe();
 
     ACBrNFe.WebServices.Retorno.Executar;
-    RespRetorno := TRetornoResposta.Create(resINI);
+    RespRetorno := TRetornoResposta.Create('NFe', resINI);
     try
-      RespRetorno.ProcessarResposta(ACBrNFe);
+      RespRetorno.Processar(ACBrNFe.WebServices.Retorno.NFeRetorno,
+                            ACBrNFe.WebServices.Retorno.Recibo,
+                            ACBrNFe.WebServices.Retorno.Msg,
+                            ACBrNFe.WebServices.Retorno.Protocolo,
+                            ACBrNFe.WebServices.Retorno.ChaveNFe);
       fpCmd.Resposta := RespRetorno.Msg + sLineBreak + RespRetorno.Gerar;
       if ACBrNFe.Configuracoes.Geral.Salvar then
         fpCmd.Resposta := fpCmd.Resposta + sLineBreak + 'Arquivo=' + ACBrNFe.Configuracoes.Arquivos.PathSalvar +
@@ -1333,7 +1339,7 @@ begin
       ACBrNFe.WebServices.Consulta.Executar;
       Resposta := TConsultaNFeResposta.Create(resINI);
       try
-        Resposta.ProcessarResposta(ACBrNFe);
+        Resposta.Processar(ACBrNFe);
         fpCmd.Resposta := Resposta.Msg + sLineBreak + Resposta.Gerar;
 
         if  FilesExists( AXML ) then
@@ -1427,7 +1433,7 @@ begin
     ACBrNFe.WebServices.StatusServico.Executar;
     Resposta := TStatusServicoResposta.Create(resINI);
     try
-      Resposta.ProcessarResposta(ACBrNFe);
+      Resposta.Processar(ACBrNFe);
       fpCmd.Resposta := Resposta.Msg + sLineBreak + Resposta.Gerar;
     finally
       Resposta.Free;
@@ -1510,6 +1516,7 @@ begin
     DanfeRL:= TACBrNFeDANFeRL.Create(ACBrNFe);
     try
       ACBrNFe.DANFE:= DanfeRL;
+      ACBrNFe.DANFE.Impressora := ' ';
       DoConfiguraDANFe(False, Trim(APreview) );
 
       if NaoEstaVazio(AImpressora) then
@@ -1565,7 +1572,7 @@ begin
     try
       DoConfiguraDANFe(True, '');
 
-      if (ACBrNFe.NotasFiscais.Items[0].NFe.Ide.modelo = 55) then
+      if (ACBrNFe.NotasFiscais.Items[0].NFe.Ide.modelo = CModeloNFe55) then
       begin
         if NaoEstaVazio(MarcaDagua) then
           TACBrNFeDANFeRL(ACBrNFe.DANFE).MarcadAgua:= MarcaDagua
@@ -1575,13 +1582,13 @@ begin
 
       ACBrNFe.DANFe.Protocolo :=  trim( AProtocolo );
 
-      if ACBrNFe.NotasFiscais.Items[0].NFe.Ide.modelo = 65 then
+      if ACBrNFe.NotasFiscais.Items[0].NFe.Ide.modelo = CModeloNFe65 then
       begin
         TACBrNFeDANFCEClass(ACBrNFe.DANFE).ViaConsumidor := Consumidor;
       end;
 
-      if Simplificado then
-        ACBrNFe.DANFE.TipoDANFE := tiSimplificado;
+      if Simplificado and (ACBrNFe.DANFE is TACBrNFeDANFEClass)  then
+        TACBrNFeDANFEClass(ACBrNFe.DANFE).TipoDANFE := tiSimplificado;
 
       try
         ACBrNFe.NotasFiscais.ImprimirPDF;
@@ -1683,7 +1690,7 @@ begin
     ACBrNFe.WebServices.Enviar.Executar;
     RespEnvio := TEnvioResposta.Create(resINI);
     try
-       RespEnvio.ProcessarResposta(ACBrNFe);
+       RespEnvio.Processar(ACBrNFe);
        fpCmd.Resposta := fpCmd.Resposta + RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
     finally
        RespEnvio.Free;
@@ -1694,9 +1701,13 @@ begin
        ACBrNFe.WebServices.Retorno.Recibo := ACBrNFe.WebServices.Enviar.Recibo;
        ACBrNFe.WebServices.Retorno.Executar;
 
-       RespRetorno := TRetornoResposta.Create(resINI);
+       RespRetorno := TRetornoResposta.Create('NFe', resINI);
        try
-         RespRetorno.ProcessarResposta(ACBrNFe);
+         RespRetorno.Processar(ACBrNFe.WebServices.Retorno.NFeRetorno,
+                               ACBrNFe.WebServices.Retorno.Recibo,
+                               ACBrNFe.WebServices.Retorno.Msg,
+                               ACBrNFe.WebServices.Retorno.Protocolo,
+                               ACBrNFe.WebServices.Retorno.ChaveNFe);
          fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespRetorno.Msg
                         + sLineBreak + RespRetorno.Gerar;
        finally
@@ -1832,7 +1843,7 @@ begin
     ACBrNFe.WebServices.Enviar.Executar;
     RespEnvio := TEnvioResposta.Create(resINI);
     try
-      RespEnvio.ProcessarResposta(ACBrNFe);
+      RespEnvio.Processar(ACBrNFe);
       fpCmd.Resposta := RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
     finally
       RespEnvio.Free;
@@ -1841,9 +1852,13 @@ begin
     begin
       ACBrNFe.WebServices.Retorno.Recibo := ACBrNFe.WebServices.Enviar.Recibo;
       ACBrNFe.WebServices.Retorno.Executar;
-      RespRetorno := TRetornoResposta.Create(resINI);
+      RespRetorno := TRetornoResposta.Create('NFe', resINI);
       try
-         RespRetorno.ProcessarResposta(ACBrNFe);
+         RespRetorno.Processar(ACBrNFe.WebServices.Retorno.NFeRetorno,
+                               ACBrNFe.WebServices.Retorno.Recibo,
+                               ACBrNFe.WebServices.Retorno.Msg,
+                               ACBrNFe.WebServices.Retorno.Protocolo,
+                               ACBrNFe.WebServices.Retorno.ChaveNFe);
          fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespRetorno.Msg
                         + sLineBreak + RespRetorno.Gerar;
       finally
@@ -1917,7 +1932,7 @@ begin
       ACBrNFe.WebServices.Enviar.Executar;
       RespEnvio := TEnvioResposta.Create(resINI);
       try
-        RespEnvio.ProcessarResposta(ACBrNFe);
+        RespEnvio.Processar(ACBrNFe);
         fpCmd.Resposta := RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
       finally
         RespEnvio.Free;
@@ -1926,9 +1941,13 @@ begin
       begin
         ACBrNFe.WebServices.Retorno.Recibo := ACBrNFe.WebServices.Enviar.Recibo;
         ACBrNFe.WebServices.Retorno.Executar;
-        RespRetorno := TRetornoResposta.Create(resINI);
+        RespRetorno := TRetornoResposta.Create('NFe', resINI);
         try
-           RespRetorno.ProcessarResposta(ACBrNFe);
+           RespRetorno.Processar(ACBrNFe.WebServices.Retorno.NFeRetorno,
+                                 ACBrNFe.WebServices.Retorno.Recibo,
+                                 ACBrNFe.WebServices.Retorno.Msg,
+                                 ACBrNFe.WebServices.Retorno.Protocolo,
+                                 ACBrNFe.WebServices.Retorno.ChaveNFe);
            fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespRetorno.Msg
                           + sLineBreak + RespRetorno.Gerar;
         finally
@@ -2074,8 +2093,8 @@ begin
         TACBrNFeDANFCEClass(ACBrNFe.DANFE).ViaConsumidor := AConsumidor;
       end;
 
-      if ASimplificado then
-          ACBrNFe.DANFE.TipoDANFE := tiSimplificado;
+      if ASimplificado and (ACBrNFe.DANFE is TACBrNFeDANFEClass) then
+          TACBrNFeDANFEClass(ACBrNFe.DANFE).TipoDANFE := tiSimplificado;
 
       try
         DoAntesDeImprimir(( StrToBoolDef( APreview, False) ) or (MonitorConfig.DFE.Impressao.DANFE.MostrarPreview ));
@@ -2142,7 +2161,7 @@ begin
     ACBrNFe.EnviarEvento(ALote);
     Resposta := TCancelamentoResposta.Create(resINI);
     try
-      Resposta.ProcessarResposta(ACBrNFe);
+      Resposta.Processar(ACBrNFe);
       fpCmd.Resposta := Resposta.XMotivo + sLineBreak + Resposta.Gerar;
     finally
       Resposta.Free;
@@ -2240,6 +2259,8 @@ var
   ACopias: Integer;
   APreview: String;
   DanfeRL: TACBrNFeDANFeRL;
+  DanfeEscPos: TACBrNFeDANFeESCPOS;
+  POSPrinter: TACBrPosPrinter;
 begin
   AXMLInut := fpCmd.Params(0);
   AImpressora := fpCmd.Params(1);
@@ -2250,30 +2271,78 @@ begin
   begin
     ACBrNFe.InutNFe.ID := '';
     CargaDFeInut := TACBrCarregarNFeInut.Create(ACBrNFe, AXMLInut);
-    DanfeRL:= TACBrNFeDANFeRL.Create(ACBrNFe);
     try
-      ACBrNFe.DANFE:= DanfeRL;
-      DoConfiguraDANFe(False, Trim(APreview) );
+      if (ACBrNFe.InutNFe.modelo = CModeloNFe65) and
+        (MonitorConfig.DFE.Impressao.NFCe.Emissao.Modelo = CEmissaoESCPOS ) then
+      begin
+        DanfeEscPos := TACBrNFeDANFeESCPOS.Create(ACBrNFe.DANFE);
+        POSPrinter  := TACBrPosPrinter.Create(DanfeEscPos.PosPrinter);
+        try
 
-      if NaoEstaVazio(AImpressora) then
-        ACBrNFe.DANFe.Impressora := AImpressora;
+          PosPrinter.Device.Porta := MonitorConfig.PosPrinter.Porta;
+          PosPrinter.Modelo := TACBrPosPrinterModelo(MonitorConfig.PosPrinter.Modelo);
+          POSPrinter.LinhasEntreCupons:= MonitorConfig.PosPrinter.LinhasPular;
+          PosPrinter.ColunasFonteNormal := MonitorConfig.PosPrinter.Colunas;
+          PosPrinter.CortaPapel := MonitorConfig.PosPrinter.CortarPapel;
+          POSPrinter.EspacoEntreLinhas := MonitorConfig.PosPrinter.EspacoEntreLinhas;
+          POSPrinter.LinhasBuffer:= MonitorConfig.PosPrinter.LinhasBuffer;
+          POSPrinter.TraduzirTags:= MonitorConfig.PosPrinter.TraduzirTags;
+          Posprinter.IgnorarTags:= MonitorConfig.PosPrinter.IgnorarTags;
+          PosPrinter.PaginaDeCodigo:= TACBrPosPaginaCodigo( MonitorConfig.PosPrinter.PaginaDeCodigo );
 
-      if (ACopias > 0) then
-        ACBrNFe.DANFe.NumCopias := ACopias;
+          DanfeEscPos.PosPrinter:= POSPrinter;
+          ACBrNFe.DANFE := DanfeEscPos;
 
-      try
-        DoAntesDeImprimir(( StrToBoolDef(APreview,False) ) or (MonitorConfig.DFE.Impressao.DANFE.MostrarPreview ));
-        ACBrNFe.ImprimirInutilizacao;
-      finally
-        DoDepoisDeImprimir;
+          if not PosPrinter.ControlePorta then
+          begin
+            PosPrinter.Ativar;
+            if not PosPrinter.Device.Ativo then
+              PosPrinter.Device.Ativar;
+          end;
+
+          if (ACopias > 0) then
+            ACBrNFe.DANFe.NumCopias := ACopias;
+
+          ACBrNFe.ImprimirInutilizacao;
+
+        finally
+          DanfeEscPos.Free;
+          POSPrinter.Free;
+        end;
+      end
+      else
+      begin
+        DanfeRL:= TACBrNFeDANFeRL.Create(ACBrNFe);
+        try
+          ACBrNFe.DANFE:= DanfeRL;
+          DoConfiguraDANFe(False, Trim(APreview) );
+
+          if NaoEstaVazio(AImpressora) then
+            ACBrNFe.DANFe.Impressora := AImpressora;
+
+          if (ACopias > 0) then
+            ACBrNFe.DANFe.NumCopias := ACopias;
+
+          try
+            DoAntesDeImprimir(( StrToBoolDef(APreview,False) ) or (MonitorConfig.DFE.Impressao.DANFE.MostrarPreview ));
+            ACBrNFe.ImprimirInutilizacao;
+          finally
+            DoDepoisDeImprimir;
+          end;
+
+        finally
+          DanfeRL.Free;
+        end;
+
       end;
+
     finally
       CargaDFeInut.Free;
-      DanfeRL.Free;
     end;
 
     fpCmd.Resposta := 'Inutilização Impresso com sucesso';
   end;
+
 end;
 
 { TMetodoImprimirInutilizacaoPDF }
@@ -2392,7 +2461,7 @@ begin
     ACBrNFe.EnviarEvento(ACBrNFe.EventoNFe.idLote);
     Resp := TEventoResposta.Create(resINI);
     try
-      Resp.ProcessarResposta(ACBrNFe);
+      Resp.Processar(ACBrNFe);
       fpCmd.Resposta:= sLineBreak + Resp.Gerar;
 
     finally
@@ -2425,7 +2494,7 @@ begin
     ACBrNFe.EnviarEvento(ACBrNFe.EventoNFe.idLote);
     Resp := TEventoResposta.Create(resINI);
     try
-      Resp.ProcessarResposta(ACBrNFe);
+      Resp.Processar(ACBrNFe);
       fpCmd.Resposta:= sLineBreak + Resp.Gerar ;
 
     finally
@@ -2458,7 +2527,7 @@ begin
         DoValidarIntegradorNFCe(ACBrNFe.EventoNFe.Evento.Items[0].InfEvento.chNFe);
 
       ACBrNFe.EnviarEvento(ACBrNFe.EventoNFe.idLote);
-      Resp.ProcessarResposta(ACBrNFe);
+      Resp.Processar(ACBrNFe);
       fpCmd.Resposta:= sLineBreak + Resp.Gerar ;
 
 
@@ -2496,7 +2565,10 @@ begin
     ACBrNFe.DistribuicaoDFePorChaveNFe(AUF, ACNPJ, AChave);
     Resp:= TDistribuicaoDFeResposta.Create(resINI);
     try
-      Resp.ProcessarResposta(ACBrNFe);
+      Resp.Processar(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt,
+                     ACBrNFe.WebServices.DistribuicaoDFe.Msg,
+                     ACBrNFe.WebServices.DistribuicaoDFe.NomeArq,
+                     ACBrNFe.WebServices.DistribuicaoDFe.ListaArqs);
       fpCmd.Resposta:= sLineBreak + Resp.Gerar ;
 
     finally
@@ -2534,7 +2606,10 @@ begin
     ACBrNFe.DistribuicaoDFePorUltNSU(AUF, ACNPJ, AUltNSU);
     Resp:= TDistribuicaoDFeResposta.Create(resINI);
     try
-      Resp.ProcessarResposta(ACBrNFe);
+      Resp.Processar(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt,
+                     ACBrNFe.WebServices.DistribuicaoDFe.Msg,
+                     ACBrNFe.WebServices.DistribuicaoDFe.NomeArq,
+                     ACBrNFe.WebServices.DistribuicaoDFe.ListaArqs);
       fpCmd.Resposta:= fpCmd.Resposta + sLineBreak + Resp.Gerar ;
 
     finally
@@ -2571,7 +2646,10 @@ begin
     ACBrNFe.DistribuicaoDFePorNSU(AUF, ACNPJ, ANSU);
     Resp:= TDistribuicaoDFeResposta.Create(resINI);
     try
-      Resp.ProcessarResposta(ACBrNFe);
+      Resp.Processar(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt,
+                     ACBrNFe.WebServices.DistribuicaoDFe.Msg,
+                     ACBrNFe.WebServices.DistribuicaoDFe.NomeArq,
+                     ACBrNFe.WebServices.DistribuicaoDFe.ListaArqs);
       fpCmd.Resposta:= fpCmd.Resposta + sLineBreak + Resp.Gerar ;
     finally
       Resp.Free;
@@ -2838,7 +2916,7 @@ begin
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    if (MonitorConfig.DFE.Impressao.NFCe.Emissao.Modelo <> 1 )  then
+    if (MonitorConfig.DFE.Impressao.NFCe.Emissao.Modelo <> CEmissaoESCPOS )  then
         raise Exception.Create('Comando disponível apenas para o DANFe modelo DANFe ESCPOS');
 
     DanfeEscPos := TACBrNFeDANFeESCPOS.Create(ACBrNFe.DANFE);
@@ -3047,7 +3125,7 @@ begin
     ACBrNFe.WebServices.Enviar.Executar;
     RespEnvio := TEnvioResposta.Create(resINI);
     try
-      RespEnvio.ProcessarResposta(ACBrNFe);
+      RespEnvio.Processar(ACBrNFe);
       fpCmd.Resposta := fpCmd.Resposta + RespEnvio.Msg + sLineBreak + RespEnvio.Gerar;
     finally
       RespEnvio.Free;
@@ -3056,9 +3134,13 @@ begin
     begin
       ACBrNFe.WebServices.Retorno.Recibo := ACBrNFe.WebServices.Enviar.Recibo;
       ACBrNFe.WebServices.Retorno.Executar;
-      RespRetorno := TRetornoResposta.Create(resINI);
+      RespRetorno := TRetornoResposta.Create('NFe', resINI);
       try
-         RespRetorno.ProcessarResposta(ACBrNFe);
+         RespRetorno.Processar(ACBrNFe.WebServices.Retorno.NFeRetorno,
+                               ACBrNFe.WebServices.Retorno.Recibo,
+                               ACBrNFe.WebServices.Retorno.Msg,
+                               ACBrNFe.WebServices.Retorno.Protocolo,
+                               ACBrNFe.WebServices.Retorno.ChaveNFe);
          fpCmd.Resposta := fpCmd.Resposta + sLineBreak + RespRetorno.Msg
                         + sLineBreak + RespRetorno.Gerar;
       finally
@@ -3169,7 +3251,10 @@ begin
     ACBrNFe.DistribuicaoDFe(AUF, ACNPJ, AUltNSU, ANSU, AChave);
     Resp:= TDistribuicaoDFeResposta.Create(resINI);
     try
-      Resp.ProcessarResposta(ACBrNFe);
+      Resp.Processar(ACBrNFe.WebServices.DistribuicaoDFe.retDistDFeInt,
+                     ACBrNFe.WebServices.DistribuicaoDFe.Msg,
+                     ACBrNFe.WebServices.DistribuicaoDFe.NomeArq,
+                     ACBrNFe.WebServices.DistribuicaoDFe.ListaArqs);
       fpCmd.Resposta:= fpCmd.Resposta + sLineBreak + Resp.Gerar ;
 
     finally
@@ -3192,7 +3277,8 @@ begin
 
   with TACBrObjetoNFe(fpObjetoDono) do
   begin
-    ACBrNFe.DANFE.TipoDANFE:= StrToTpImp( OK, IntToStr(TipoImp) );
+    if not (ACBrNFe.DANFE is TACBrNFeDANFEClass) then Exit;
+    TACBrNFeDANFEClass(ACBrNFe.DANFE).TipoDANFE:= StrToTpImp( OK, IntToStr(TipoImp) );
     with MonitorConfig.DFE.Impressao.Geral do
       DANFE := TipoImp - 1;
     MonitorConfig.SalvarArquivo;

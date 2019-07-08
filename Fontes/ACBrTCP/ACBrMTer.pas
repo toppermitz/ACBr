@@ -259,6 +259,7 @@ type
     procedure PosicionarCursor(const aIP: String; aLinha, aColuna: Integer);
     procedure SolicitarPeso(const aIP: String; aSerial: Integer);
     procedure VerificarOnline(const aIP: String);
+    procedure Desconectar(const aIP: String);
 
     property Ativo     : Boolean           read GetAtivo    write SetAtivo;
     property CmdEnviado: AnsiString        read fCmdEnviado;
@@ -274,7 +275,7 @@ type
     property Balanca       : TACBrBAL          read fACBrBAL        write SetBalanca;
     property EchoMode      : TACBrMTerEchoMode read fEchoMode       write SetEchoMode;
     property IP            : String            read GetIP           write SetIP;
-    property PasswordChar  : Char              read fPasswordChar   write SetPasswordChar;
+    property PasswordChar  : Char              read fPasswordChar   write SetPasswordChar default '*';
     property Port          : String            read GetPort         write SetPort;
     property Terminador       : AnsiString     read fTerminador        write SetTerminador;
     property TerminadorBalanca: AnsiString     read fTerminadorBalanca write SetTerminadorBalanca;
@@ -980,14 +981,6 @@ begin
     Exit;
 
   fEchoMode := AValue;
-
-  case fEchoMode of
-    mdeNone  : PasswordChar := ' ';
-    mdeNormal: PasswordChar :=  #0;
-  else
-    if (PasswordChar = #0) or (PasswordChar = ' ') then
-      PasswordChar := '*';
-  end;
 end;
 
 procedure TACBrMTer.SetIP(const AValue: String);
@@ -1024,13 +1017,7 @@ begin
   if (fPasswordChar = AValue) then
     Exit;
 
-  fPasswordChar    := AValue;
-  case fPassWordChar of
-    #0 : EchoMode := mdeNormal;
-    ' ': EchoMode := mdeNone;
-  else
-    EchoMode := mdePassword;
-  end;
+  fPasswordChar := AValue;
 end;
 
 function TACBrMTer.GetAtivo: Boolean;
@@ -1069,6 +1056,7 @@ begin
   fTerminadorBalanca := '#3';
   fTerminadorBalancaAsc := #3;
   fWaitInterval := 100;
+  fPassWordChar := '*';
 
   fConexoes := TACBrMTerConexoes.Create(Self);
 
@@ -1316,6 +1304,15 @@ begin
 
   wConexao.UltimoComando.Clear;
   wConexao.VerificarOnLine;
+end;
+
+procedure TACBrMTer.Desconectar(const aIP: String);
+var
+  ASocket: TTCPBlockSocket;
+begin
+  ASocket := EncontrarSocket(aIP);
+  if Assigned(ASocket) then
+    ASocket.CloseSocket;
 end;
 
 end.

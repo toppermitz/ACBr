@@ -47,6 +47,59 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+08/07/2019
+-- ACBrMDFeWebServices --
+[*] No TratarRetorno do método Consultar, foi acrescentado o tratamento de 
+    MDF-e com evento de Encerramento.
+   Por: Italo Jurisato Junior
+
+02/07/2019
+-- ACBrMDFe / ACBrMDFeConfiguracoes --
+[*] Acrescentado um método para setar a propriedade GerarInfMDFeSupl e 
+    corrigido a função GetURLQRCode.
+   Por: Gilvano Piontkoski
+
+01/07/2019
+-- pmdfeMDFeR --
+[*] Alterado a forma de leitura das tags: indCanalVerde e indCarregaPosterior.
+   Por: Italo Jurisato Junior
+
+27/06/2019
+-- ACBrMDFe / ACBrMDFeWebServices --
+[+] Implementado o modo de envio sincrono do MDF-e.
+    function Enviar(ALote: integer; Imprimir: Boolean = True;
+      ASincrono:  Boolean = False): Boolean;
+    a função enviar agora tem um parametro a mais que define o modo de envio.
+   Por: Italo Jurisato Junior
+-- ACBrMDFeConfiguracoes --
+[*] Removido a classe que contem as propriedades de Download utilizadas
+    pelo método DistribuicaoDFe, pois agora se encontra na unit ACBrDFeConfiguracoes.
+   Por: Italo Jurisato Junior
+
+26/06/2019
+-- Diversos --
+[*] Ajustes visando a versão 3.00a
+  Por: Italo Jurisato Junior
+
+21/06/2019
+-- ACBrMDFeServicos --
+[+] Incluidas as URLs do QR-Code e de Recepção em modo Sincrono.
+  Por: Italo Jurisato Junior
+
+14/06/2019
+-- Diversos --
+[+] Adicionado a função especifica para converter o código do evento para 
+    o enumerador, adicionado a propridade de configuração GerarInfMDFeSupl,
+    que permite gerar ou não o grupo infMDFeSupl que vai conter a com campo
+    com a string do QR-Code previsto na versão 3.00a.
+    (ainda não esta disponivel o ambiente de homologação)
+  Por: Italo Jurisato Junior
+
+24/05/2019
+-- ACBrMDFeWebservices --
+[*] Corrigido a montagem do XML do evento para ser validado corretamente
+   Por: Italo Jurisato Junior
+
 06/03/2018
 -- pmdfeProcMDFe.pas --
 [*] https://www.projetoacbr.com.br/forum/topic/49759-mdf-e-contratante/

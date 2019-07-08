@@ -182,6 +182,14 @@ begin
   GerarInfMDFe;
   Gerador.wGrupo('/infMDFe');
 
+  if MDFe.infMDFeSupl.qrCodMDFe <> '' then
+  begin
+    Gerador.wGrupo('infMDFeSupl');
+    Gerador.wCampo(tcStr, '#196', 'qrCodMDFe', 50, 1000, 1,
+                     '<![CDATA[' + MDFe.infMDFeSupl.qrCodMDFe + ']]>', DSC_INFQRCODMDFE, False);
+    Gerador.wGrupo('/infMDFeSupl');
+  end;
+
   if FOpcoes.GerarTagAssinatura <> taNunca then
   begin
     Gerar := true;
@@ -288,7 +296,10 @@ begin
   end;
 
   if (MDFe.infMDFe.versao >= 3) and (MDFe.ide.indCanalVerde = tiSim) then
-    Gerador.wCampo(tcStr, '#024b', 'indCanalVerde', 01, 01, 0, TindicadorToStr(MDFe.ide.indCanalVerde), DSC_INDCANALVERDE);
+    Gerador.wCampo(tcStr, '#027', 'indCanalVerde', 01, 01, 0, TindicadorToStr(MDFe.ide.indCanalVerde), DSC_INDCANALVERDE);
+
+  if (MDFe.infMDFe.versao >= 3) and (MDFe.ide.indCarregaPosterior = tiSim) then
+    Gerador.wCampo(tcStr, '#028', 'indCarregaPosterior', 01, 01, 0, TindicadorToStr(MDFe.ide.indCarregaPosterior), DSC_INDCARREGAPOSTERIOR);
 
   Gerador.wGrupo('/ide');
 end;

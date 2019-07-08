@@ -47,6 +47,126 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+05/07/2019
+-- ACBrNFSeNotasFiscais --
+[*] https://www.projetoacbr.com.br/forum/topic/52288-nfs-e-envio-de-pdf-no-email/
+   Por: Antonio Gomes
+
+05/07/2019
+-- pnfsNFSeG --
+[*] Possível correção ao método cancelar - provedor SP.
+   Por: Italo Jurisato Junior
+
+04/07/2019
+-- ACBrNFSeWebServices --
+[*] Possível correção ao método cancelar - provedor SP.
+   Por: Italo Jurisato Junior
+
+04/07/2019
+-- Diversos --
+[*] Remoção de linhas de código comentadas.
+   Por: Italo Jurisato Junior
+
+01/07/2019
+-- ACBrNFSeWebServices --
+[*] Possível correção ao método cancelar - provedor Pronimv2.
+   Por: Italo Jurisato Junior
+
+01/07/2019
+-- ACBrNFSeWebServices --
+[*] Possível correção ao método de consulta ao lote - provedor SP.
+   Por: Italo Jurisato Junior
+-- pnfsConsSitLoteRpsResposta --
+[*] Alteração na leitura do retorno - provedor Infisc.
+   Por: Marcio st / Italo Jurisato Junior
+-- ACBrNFSeWebServices --
+[*] Possível correção ao método de consulta a situação do lote - provedor SP.
+   Por: Italo Jurisato Junior
+
+28/06/2019
+-- ACBrNFSeWebServices --
+[-] Correção para evitar Violação de Acesso.
+   Por: Italo Jurisato Junior
+
+27/06/2019
+-- ACBrNFSeDANFSeRL/ACBrNFSeDANFSeRLRetrato --
+[*] Alteração na mascara de formatação de valores, visando imprimir
+    valores acima de 9999,99.
+   Por: Italo Jurisato Junior
+-- ACBrNFSeWebServices/pnfsNFSeG --
+[*] Alteração visando o provedor Sigep.
+   Por: Italo Jurisato Junior
+
+26/06/2019
+-- pnfsNFSeW_EGoverneISS --
+[*] Alterado para não gerar o grupo tomador caso não for informado o
+    CNPJ/CPF
+   Por: Italo Jurisato Junior
+
+25/06/2019
+-- ACBrNFSeWebServices --
+[*] No Enviar Lote, para o provedor Pronim - remoção do namespace da tag:
+    <EnviarLoteRpsEnvio>
+   Por: Italo Jurisato Junior
+-- ACBrNFSeDANFSeRLRetrato --
+[*] https://www.projetoacbr.com.br/forum/topic/51780-tag-razaosocial-do-prestador-em-branco-reabrindo-o-assunto/
+   Por: Italo Jurisato Junior
+
+14/06/2019
+-- pnfsNFSeR --
+[*] https://www.projetoacbr.com.br/forum/topic/51927-nfs-e-canela-rs-com-iss-retido/
+   Por: Eliezerfb
+
+29/05/2019
+-- ACBrNFSeWebServices --
+[*] Removido da lista de provedores o provedor Equiplano para que o 
+    docElemento receba o prefixo (namespace).
+   Por: Michel Ouriques
+-- ACBrNFSeWebServices --
+[*] Ajustes para o provedor Tinus - URL SoapAction.
+   Por: Italo Jurisato Junior
+
+28/05/2019
+-- pnfsNFSeW_Infisc --
+[*] Alteração baseana na postagem: 
+    https://www.projetoacbr.com.br/forum/topic/51392-infiscv11-simples-nacional/?do=findComment&comment=340050
+   Por: Italo Jurisato Junior
+
+27/05/2019
+-- pnfsNFSeW_Infisc --
+[*] O grupo ISS não deve ser gerado se os valores de vBCISS e vISS for zero
+   Por: Italo Jurisato Junior
+
+21/05/2019
+-- ACBrNFSeWebServices --
+[*] Valor atribuido de forma invertida a variável ProcSucesso.
+   Por: Italo Jurisato Junior
+
+16/05/2019
+-- Diversos --
+[+] Implementação do provedor SilTecnologia.
+   Por: Wesley Fracanábia
+
+15/05/2019
+-- ACBrNFSeWebServices --
+[-] Correção de um bug surgido na correção anterior.
+   Por: Italo Jurisato Junior
+
+14/05/2019
+-- ACBrNFSeWebServices --
+[*] Corrigido o retorno do método que faz a leitura do retorno do webservice, não estava
+    tratando corretamente o retorno do provedor EGoverneISS.
+   Por: Italo Jurisato Junior
+
+13/05/2019
+-- pnfsNFSeW_ABRASFv2 --
+[*] Incluido o provedor RLZ na lista de provedores cuja tag Aliquota tem apenas 2
+    casas decimais.
+   Por: Italo Jurisato Junior
+-- pnfsNFSeW_Infisc --
+[*] https://www.projetoacbr.com.br/forum/topic/51230-aliquotas-dos-itens-devem-ser-zeradas-devido-o-contribuinte-ser-optante-pelo-simples-nacional/?do=findComment&comment=338133
+   Por: Celso Pothin
+
 09/05/2019
 -- pnfsNFSeW_Infisc --
 [*] https://www.projetoacbr.com.br/forum/topic/51230-aliquotas-dos-itens-devem-ser-zeradas-devido-o-contribuinte-ser-optante-pelo-simples-nacional/

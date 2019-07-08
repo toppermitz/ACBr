@@ -113,7 +113,7 @@ type
                     proIPM, proBelford, proISSJoinville, proAsten, proELv2,
                     proTiplanv2, proGiss, proDeISS, proTcheInfov2, proDataSmart,
                     proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-					proGiap, proAssessorPublico, proSigIss, proElotech);
+					proGiap, proAssessorPublico, proSigIss, proElotech, proSilTecnologia);
 
   TnfseAcao = (acRecepcionar, acConsSit, acConsLote, acConsNFSeRps, acConsNFSe,
                acCancelar, acGerar, acRecSincrono, acConsSecRps, acSubstituir);
@@ -219,13 +219,13 @@ function StrToCondicao(out ok: boolean; const s: String): TnfseCondicaoPagamento
 function CondicaoToStrPublica(const t: TnfseCondicaoPagamento): String;
 function StrPublicaToCondicao(out ok: boolean; const s: String): TnfseCondicaoPagamento;
 
-function ObterDescricaoServico(cCodigo: String): String;
-function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; ACNPJ: String;
+function ObterDescricaoServico(const cCodigo: String): String;
+function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
                      ASerie:Integer; ANumero, ACodigo: Integer;
                      AModelo: Integer=56): String;
 function RetirarPrefixos(const AXML: String; AProvedor: TnfseProvedor): String;
-function VersaoXML(AXML: String): String;
-function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; ACNPJ: String;
+function VersaoXML(const AXML: String): String;
+function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
                                ANumero: Int64; AModelo: Integer = 56): String;
 
 function LayOutToServico(const t: TLayOutNFSe): String;
@@ -235,7 +235,7 @@ function LayOutToSchema(const t: TLayOutNFSe): TSchemaNFSe;
 function LayOutToStr(const t: TLayOutNFSe): String;
 
 function SchemaNFSeToStr(const t: TSchemaNFSe): String;
-function StrToSchemaNFSe(out ok: Boolean; const s: String): TSchemaNFSe;
+function StrToSchemaNFSe(const s: String): TSchemaNFSe;
 
 function StrToVersaoNFSe(out ok: Boolean; const s: String): TVersaoNFSe;
 function VersaoNFSeToStr(const t: TVersaoNFSe): String;
@@ -516,7 +516,7 @@ begin
          'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2',
          'Tiplanv2', 'Giss', 'DeISS', 'TcheInfov2', 'DataSmart', 'MetropolisWeb',
          'Desenvolve', 'Centi', 'RLZ', 'SigCorp', 'Giap', 'AssessorPublico', 
-		 'SigIss', 'Elotech'],
+		 'SigIss', 'Elotech', 'SilTecnologia'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -534,7 +534,7 @@ begin
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
          proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
          proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-		 proGiap, proAssessorPublico, proSigIss, proElotech]);
+		 proGiap, proAssessorPublico, proSigIss, proElotech, proSilTecnologia]);
 end;
 
 function StrToProvedor(out ok: boolean; const s: String): TnfseProvedor;
@@ -556,7 +556,7 @@ begin
          'SH3', 'SIAPNet', 'IPM', 'Belford', 'ISSJoinville', 'Asten', 'ELv2',
          'Tiplanv2', 'Giss', 'DeISS', 'TcheInfov2', 'DataSmart', 'MetropolisWeb',
          'Desenvolve', 'Centi', 'RLZ', 'SigCorp', 'Giap', 'AssessorPublico', 
-		 'SigIss', 'Elotech'],
+		 'SigIss', 'Elotech', 'SilTecnologia'],
         [proNenhum, proTiplan, proISSNET, proWebISS, proWebISSv2, proGINFES, proIssDSF,
          proProdemge, proAbaco, proBetha, proEquiplano, proISSIntel, proProdam,
          proGovBR, proRecife, proSimplISS, proThema, proRJ, proPublica,
@@ -574,7 +574,7 @@ begin
          proSafeWeb, proSH3, proSIAPNet, proIPM, proBelford, proISSJoinville,
          proAsten, proELv2, proTiplanv2, proGiss, proDeISS, proTcheInfov2,
          proDataSmart, proMetropolisWeb, proDesenvolve, proCenti, proRLZ, proSigCorp, 
-		 proGiap, proAssessorPublico, proSigIss, proElotech]);
+		 proGiap, proAssessorPublico, proSigIss, proElotech, proSilTecnologia]);
 end;
 
 // Condição de pagamento ******************************************************
@@ -18056,7 +18056,7 @@ begin
                            [EgConstrucaoCivil, EgOutros]);
 end;
 
-function ObterDescricaoServico(cCodigo: String): String;
+function ObterDescricaoServico(const cCodigo: String): String;
 var
  i: Integer;
  PathArquivo: String;
@@ -18082,7 +18082,7 @@ begin
   end;
 end;
 
-function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; ACNPJ: String;
+function ChaveAcesso(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
   ASerie: Integer; ANumero, ACodigo: Integer; AModelo: Integer): String;
 var
   vUF, vDataEmissao, vSerie, vNumero,
@@ -18147,7 +18147,7 @@ begin
   result := XML;
 end;
 
-function VersaoXML(AXML: String): String;
+function VersaoXML(const AXML: String): String;
 var
  i: Integer;
 begin
@@ -18157,7 +18157,7 @@ begin
   else result := '2';
 end;
 
-function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; ACNPJ: String;
+function GerarNomeNFSe(AUF: Integer; ADataEmissao: TDateTime; const ACNPJ: String;
                        ANumero: Int64; AModelo: Integer): String;
 var
   vUF, vDataEmissao, vNumero, vModelo: String;
@@ -18234,10 +18234,11 @@ begin
   Result := copy(Result, 4, Length(Result)); // Remove prefixo "sch"
 end;
 
-function StrToSchemaNFSe(out ok: Boolean; const s: String): TSchemaNFSe;
+function StrToSchemaNFSe(const s: String): TSchemaNFSe;
 var
   P: Integer;
   SchemaStr: String;
+  CodSchema: Integer;
 begin
   P := pos('_',s);
   if p > 0 then
@@ -18248,7 +18249,14 @@ begin
   if LeftStr(SchemaStr,3) <> 'sch' then
     SchemaStr := 'sch'+SchemaStr;
 
-  Result := TSchemaNFSe( GetEnumValue(TypeInfo(TSchemaNFSe), SchemaStr ) );
+  CodSchema := GetEnumValue(TypeInfo(TSchemaNFSe), SchemaStr );
+
+  if CodSchema = -1 then
+  begin
+    raise Exception.Create(Format('"%s" não é um valor TSchemaANe válido.',[SchemaStr]));
+  end;
+
+  Result := TSchemaNFSe( CodSchema );
 end;
 
 function StrToVersaoNFSe(out ok: Boolean; const s: String): TVersaoNFSe;
@@ -18430,7 +18438,7 @@ begin
     proGINFES, proGovBR, proISSCuritiba, proISSIntel, proISSNet, proLexsom,
     proNatal, proProdemge, proPronim, proPublica, proRecife, proRJ, proSalvador,
     proSimplISS, proSJP, proSpeedGov, proThema, proTinus, proTiplan, proWebISS,
-    proCIGA, proNFSeBrasil, proMetropolisWeb: Result := loABRASFv1;
+    proCIGA, proNFSeBrasil, proMetropolisWeb, proSilTecnologia: Result := loABRASFv1;
 
     proABRASFv2, pro4R, proABase, proActconv2, proBethav2, proCoplan, proDigifred,
     proEReceita, proFIntelISS, proFiorilli, proFriburgo, proGoiania, proGovDigital,
@@ -18634,4 +18642,3 @@ begin
 end;
 
 end.
-

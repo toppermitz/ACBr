@@ -165,7 +165,8 @@ function NFE_ImprimirInutilizacaoPDF(const eChave: PChar): longint;
 implementation
 
 uses
-  ACBrLibConsts, ACBrLibNFeConsts, ACBrLibConfig, ACBrLibResposta,
+  ACBrLibConsts, ACBrLibNFeConsts, ACBrLibConfig,
+  ACBrLibResposta, ACBrLibDistribuicaoDFe, ACBrLibConsReciDFe,
   ACBrLibNFeConfig, ACBrLibNFeRespostas, ACBrNFe, ACBrMail,
   pcnConversao, pcnAuxiliar, blcksock, ACBrUtil;
 
@@ -622,7 +623,7 @@ begin
         begin
           if WebServices.StatusServico.Executar then
           begin
-            Resposta.ProcessarResposta(NFeDM.ACBrNFe1);
+            Resposta.Processar(NFeDM.ACBrNFe1);
             MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
             Result := SetRetorno(ErrOK, StrPas(sResposta));
           end
@@ -689,7 +690,7 @@ begin
         begin
           if WebServices.Consulta.Executar then
           begin
-            Resposta.ProcessarResposta(NFeDM.ACBrNFe1);
+            Resposta.Processar(NFeDM.ACBrNFe1);
             MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
             Result := SetRetorno(ErrOK, StrPas(sResposta));
           end
@@ -755,7 +756,7 @@ begin
 
             if Inutilizacao.Executar then
             begin
-              Resposta.ProcessarResposta(NFeDM.ACBrNFe1);
+              Resposta.Processar(NFeDM.ACBrNFe1);
               MoverStringParaPChar(Resposta.Gerar, sResposta, esTamanho);
               Result := SetRetorno(ErrOK, StrPas(sResposta));
             end
@@ -834,7 +835,7 @@ begin
 
           RespEnvio := TEnvioResposta.Create(pLib.Config.TipoResposta);
           try
-            RespEnvio.ProcessarResposta(NFeDM.ACBrNFe1);
+            RespEnvio.Processar(NFeDM.ACBrNFe1);
             Resposta := RespEnvio.Gerar;
           finally
             RespEnvio.Free;
@@ -846,9 +847,13 @@ begin
             WebServices.Retorno.Executar;
           end;
 
-          RespRetorno := TRetornoResposta.Create(pLib.Config.TipoResposta);
+          RespRetorno := TRetornoResposta.Create('NFe', pLib.Config.TipoResposta);
           try
-            RespRetorno.ProcessarResposta(NFeDM.ACBrNFe1);
+            RespRetorno.Processar(WebServices.Retorno.NFeRetorno,
+                                  WebServices.Retorno.Recibo,
+                                  WebServices.Retorno.Msg,
+                                  WebServices.Retorno.Protocolo,
+                                  WebServices.Retorno.ChaveNFe);
             Resposta := Resposta + sLineBreak + RespRetorno.Gerar;
           finally
             RespRetorno.Free;
@@ -920,17 +925,15 @@ begin
           WebServices.Recibo.Recibo := sRecibo;
           WebServices.Recibo.Executar;
 
-          Resp := TReciboResposta.Create(pLib.Config.TipoResposta);
+          Resp := TReciboResposta.Create('NFe', pLib.Config.TipoResposta);
           try
-            Resp.ProcessarResposta(NFeDM.ACBrNFe1);
-            pLib.GravarLog('Resp.Gerar', logNormal);
+            Resp.Processar(WebServices.Recibo.NFeRetorno,
+                           WebServices.Recibo.Recibo);
             Resposta := Resp.Gerar;
           finally
-            pLib.GravarLog('Resp.Free', logNormal);
             Resp.Free;
           end;
 
-          pLib.GravarLog('Result', logNormal);
           MoverStringParaPChar(Resposta, sResposta, esTamanho);
           Result := SetRetorno(ErrOK, StrPas(sResposta));
         end;
@@ -1005,7 +1008,7 @@ begin
         begin
           Resp := TCancelamentoResposta.Create(resINI);
           try
-            Resp.ProcessarResposta(NFeDM.ACBrNFe1);
+            Resp.Processar(NFeDM.ACBrNFe1);
             Resposta := Resp.XMotivo + sLineBreak;
             Resposta := Resposta + Resp.Gerar;
           finally
@@ -1064,7 +1067,7 @@ begin
           begin
             try
               Resp := TEventoResposta.Create(pLib.Config.TipoResposta);
-              Resp.ProcessarResposta(NFeDM.ACBrNFe1);
+              Resp.Processar(NFeDM.ACBrNFe1);
               Resposta := Resp.Gerar;
             finally
               Resp.Free;
@@ -1122,7 +1125,10 @@ begin
           begin
             Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
             try
-              Resp.ProcessarResposta(NFeDM.ACBrNFe1);
+              Resp.Processar(NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.Msg,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.NomeArq,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.ListaArqs);
               Resposta := Resp.Gerar;
             finally
               Resp.Free;
@@ -1183,7 +1189,10 @@ begin
           begin
             Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
             try
-              Resp.ProcessarResposta(NFeDM.ACBrNFe1);
+              Resp.Processar(NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.Msg,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.NomeArq,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.ListaArqs);
               Resposta := Resp.Gerar;
             finally
               Resp.Free;
@@ -1247,7 +1256,10 @@ begin
           begin
             Resp := TDistribuicaoDFeResposta.Create(pLib.Config.TipoResposta);
             try
-              Resp.ProcessarResposta(NFeDM.ACBrNFe1);
+              Resp.Processar(NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.retDistDFeInt,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.Msg,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.NomeArq,
+                            NFeDM.ACBrNFe1.WebServices.DistribuicaoDFe.ListaArqs);
               Resposta := Resp.Gerar;
             finally
               Resp.Free;
@@ -1503,6 +1515,7 @@ function NFE_Imprimir(const cImpressora: PChar; nNumCopias: Integer; const cProt
   {$IfDef STDCALL} stdcall{$Else} cdecl{$EndIf};
 Var
   Resposta: TLibImpressaoResposta;
+  NumCopias: Integer;
   Impressora, Protocolo,
   MostrarPreview, MarcaDagua,
   ViaConsumidor, Simplificado: String;
@@ -1531,9 +1544,13 @@ begin
       try
         NFeDM.ConfigurarImpressao(Impressora, False, Protocolo, MostrarPreview,
           MarcaDagua, ViaConsumidor, Simplificado);
+        NumCopias := NFeDM.ACBrNFe1.DANFE.NumCopias;
+        if nNumCopias > 0 then
+          NFeDM.ACBrNFe1.DANFE.NumCopias := nNumCopias;
         NFeDM.ACBrNFe1.NotasFiscais.Imprimir;
         Result := SetRetorno(ErrOK, Resposta.Gerar);
       finally
+        NFeDM.ACBrNFe1.DANFE.NumCopias := NumCopias;
         Resposta.Free;
         NFeDM.Destravar;
       end;

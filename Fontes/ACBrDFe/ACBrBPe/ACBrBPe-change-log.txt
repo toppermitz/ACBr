@@ -48,6 +48,45 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+04/07/2019
+-- Diversos --
+[*] https://www.projetoacbr.com.br/forum/topic/52289-erro-forma-de-pagamento-bpe/
+   Por: Snoopyfael / Italo Jurisato Junior
+
+27/06/2019
+-- ACBrBPeConfiguracoes --
+[*] Removido a classe que contem as propriedades de Download utilizadas
+    pelo método DistribuicaoDFe, pois agora se encontra na unit ACBrDFeConfiguracoes.
+   Por: Italo Jurisato Junior
+
+21/06/2019
+-- ACBrBPe --
+[*] Remoção de um IF no método Enviar que não tem mais nenhuma utilidade.
+-- ACBrBPeServicos --
+[+] Incluidas as URLs do ambiente de produção UF: SP
+  Por: Italo Jurisato Junior
+
+14/06/2019
+-- Diversos --
+[+] Adicionado a função especifica para converter o código do evento para 
+    o enumerador.
+  Por: Italo Jurisato Junior
+
+24/05/2019
+-- ACBrBPeWebservices --
+[*] Corrigido a montagem do XML do evento para ser validado corretamente
+   Por: Italo Jurisato Junior
+
+21/05/2019
+-- ACBrBPeBilhetes --
+[*] Corrigido o método LerArqIni - campos: cPais e xPais
+   Por: Italo Jurisato Junior
+
+15/05/2019
+-- pcnEnvEventoBPe --
+[*] Alteração visando disponibilziar o BPe no ACBrMonitor.
+   Por: Italo Jurisato Junior
+
 20/04/2019
 -- ACBrBPeServicos --
 [*] URLs de Homologação/Produção de Mato Grosso

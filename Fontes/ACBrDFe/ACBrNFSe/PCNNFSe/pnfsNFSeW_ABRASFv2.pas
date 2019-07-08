@@ -64,7 +64,6 @@ type
     procedure GerarValoresServico;
 
     procedure GerarConstrucaoCivil;
-    procedure GerarCondicaoPagamento;
 
     procedure GerarXML_ABRASF_v2;
 
@@ -146,7 +145,7 @@ begin
   begin
     if (FProvedor in [proActcon, proELv2, proVersaTecnologia, proISSJoinville,
         proSmarAPDABRASF, proNotaInteligente, proGiss, proTcheInfov2]) or
-       ((FProvedor in [proActconv201, proActconv2]) and (FVersaoDados = '2.01')) then
+       ((FProvedor in [proActconv201, proActconv2, profintelISS]) and (FVersaoDados = '2.01')) then
       Gerador.wGrupoNFSe('TomadorServico')
     else
       Gerador.wGrupoNFSe('Tomador');
@@ -239,7 +238,7 @@ begin
 
     if (FProvedor in [proActcon, proELv2, proVersaTecnologia, proISSJoinville,
         proSmarAPDABRASF, proNotaInteligente, proGiss, proTcheInfov2]) or
-        ((FProvedor in [proActconv201, proActconv2]) and (FVersaoDados = '2.01')) then
+        ((FProvedor in [proActconv201, proActconv2, profintelISS]) and (FVersaoDados = '2.01')) then
       Gerador.wGrupoNFSe('/TomadorServico')
     else
       Gerador.wGrupoNFSe('/Tomador');
@@ -403,6 +402,7 @@ begin
     proDeISS,
     proTcheInfov2,
     proCenti,
+    proRLZ,
     proISSJoinville: Gerador.wCampoNFSe(tcDe2, '#25', 'Aliquota', 01, 05, 0, NFSe.Servico.Valores.Aliquota, DSC_VALIQ);
 
     proABase,
@@ -490,6 +490,7 @@ begin
   if FProvedor <> proGoiania then
   begin
     case FProvedor of
+      proBethav2,
       proSisPMJP,
       proVirtual: Gerador.wCampoNFSe(tcStr, '#29', 'ItemListaServico', 01, 05, 0, OnlyNumber(NFSe.Servico.ItemListaServico), DSC_CLISTSERV);
 
@@ -659,36 +660,14 @@ begin
   Gerador.wGrupoNFSe('/credenciais');
 end;
 
-procedure TNFSeW_ABRASFv2.GerarCondicaoPagamento;
-//var
-//  i: Integer;
-begin
-(*
-  if (NFSe.CondicaoPagamento.QtdParcela > 0) then
-  begin
-    Gerador.wGrupoNFSe('CondicaoPagamento');
-    Gerador.wCampoNFSe(tcStr, '#53', 'Condicao  ', 01, 15, 1, CondicaoToStr(NFSe.CondicaoPagamento.Condicao), DSC_TPAG);
-    Gerador.wCampoNFSe(tcInt, '#54', 'QtdParcela', 01, 3, 1, NFSe.CondicaoPagamento.QtdParcela, DSC_QPARC);
-    for i := 0 to NFSe.CondicaoPagamento.Parcelas.Count - 1 do
-    begin
-      Gerador.wGrupoNFSe('Parcelas');
-      Gerador.wCampoNFSe(tcInt, '#55', 'Parcela', 01, 03, 1, NFSe.CondicaoPagamento.Parcelas.Items[i].Parcela, DSC_NPARC);
-      Gerador.wCampoNFSe(tcDatVcto, '#55', 'DataVencimento', 10, 10, 1, NFSe.CondicaoPagamento.Parcelas.Items[i].DataVencimento, DSC_DVENC);
-      Gerador.wCampoNFSe(tcDe2, '#55', 'Valor', 01, 18, 1, NFSe.CondicaoPagamento.Parcelas.Items[i].Valor, DSC_VPARC);
-      Gerador.wGrupoNFSe('/Parcelas');
-    end;
-    Gerador.wGrupoNFSe('/CondicaoPagamento');
-  end;
-*)
-end;
-
 procedure TNFSeW_ABRASFv2.GerarXML_ABRASF_v2;
 begin
   case FProvedor of
     proABase, proDigifred,proBethav2,  proEReceita, proFiorilli, proGovDigital,
     proISSe, proMitra, proNEAInformatica, proNotaInteligente, proPVH, proSisPMJP,
-    proCoplan, proSIAPNet, proSystemPro, proISSJoinville, proDesenvolve, proCenti:
-        Gerador.wGrupoNFSe('InfDeclaracaoPrestacaoServico ' + FIdentificador + '="' + NFSe.InfID.ID + '"');
+    proCoplan, proSIAPNet, proSystemPro, proISSJoinville, proDesenvolve, proCenti,
+    proBelford:
+         Gerador.wGrupoNFSe('InfDeclaracaoPrestacaoServico ' + FIdentificador + '="' + NFSe.InfID.ID + '"');
 
     proDeISS,
     proRLZ,
@@ -872,8 +851,6 @@ begin
   if FProvedor in [proTecnos] then
     Gerador.WGrupoNFSe('/tcDeclaracaoPrestacaoServico');
 end;
-
-////////////////////////////////////////////////////////////////////////////////
 
 constructor TNFSeW_ABRASFv2.Create(ANFSeW: TNFSeW);
 begin

@@ -43,6 +43,82 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+01/07/2019
+[+] DoACBrNFeUnit
+Melhorias e padronizações nas classes de Retorno DFe
+
+01/07/2019
+[+] ACBrMonitor1
+Ajuste na chamada das funções DownloadDFe, conforme ajustes realizados nos componentes DFe
+
+27/06/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConst
+Adicionado nas configurações de impressão de NFCe um campo pade definir qtd de cópias (Específico para NFCe)
+
+14/06/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConst
+Adicionado campo para config. "DígitoAgenciaConta" especifico para alguns bancos
+
+10/06/2019
+[+] DoACBrNFeUnit
+Adicionado funcionalidade de impressão de inutilização de NFCe em ESCPOS
+
+08/0/2019
+[+] ACBrMonitor1
+Adicionado SubMenu: Email referente ao componente SAT
+
+04/06/2019
+[-] DoNFeUnit
+Ajuste no nome das chamadas de métodos de Respostas conforme alterações da classe lib.
+
+03/06/2019
+[-] DoSATUnit
+Correção na leitura em tela das configurações de Regime Tributário.
+
+31/05/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado Propriedade "DownloadDFe" e "Separar por Nome" para baixar XML de Documentos do DistribuicaoDFe
+
+29/05/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts, DoSATUnit
+Adicionado para o SAT os Campos para configuração de Assunto e Mensagem de e-mail em tela
+
+29/05/2019
+[+] ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts
+Adicionado propriedade na aba e-mail para definir Envio do Corpo e-mail como HTML
+
+29/05/2019
+[*] DoSATUnit
+Ajuste leitura da versão do SAT configurado em tela
+
+24/05/2019
+[+] DoACBreSocialUnit, ACBrMonitor1
+Adicionado o método "SetTipoEmpregador"
+
+24/05/2019
+[+] DoSATUnit, ACBrMonitor1
+Adicionado o método "EnviarEmailCFe"
+
+23/05/2019
+[*] DoACBrBPe, ACBrMonitor1
+Ajustes no Componente ACBrBPe
+
+20/05/2019
+[+] DoACBrBPe, ACBrMonitor1, ACBrMonitorConfig, ACBrMonitorConsts, ACBrCMD
+Adicionado o Componente ACBrBPe e realizado as configurações necessárias para o componente
+
+15/05/2019
+[*] DoACBrSAT
+Ajuste na validação dos dados em tela para geração do XML de envio
+
+15/05/2019
+[*] DoACBrNFe
+Ajuste na validação de impressora padrão definida em tela
+
+10/05/2019
+[*] ACBrMonitor1
+Ajustes na validaçao Impressão de Cupom Fiscal, geração de PDF sempre em Fortes.
+
 09/05/2019
 [*] DoSatUnit
 Melhorias nas validações, métodos Carregar XML, Leitura do .INI e Envio.
